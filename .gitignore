@@ -1,0 +1,28 @@
+node_modules
+.next
+out
+dist
+.env
+.env.local
+*.db
+*.db-journal
+.DS_Store
+npm-debug.log*
+
+
+# Claude Code local config and state
+CLAUDE.local.md
+.claude/settings.local.json
+.claude/credentials.json
+.credentials.json
+
+# Session data and caches
+.claude/sessions/
+.claude/cache/
+.claude/tasks/
+.claude/teams/
+.claude/todos/
+.claude/history.jsonl
+.claude/stats-cache.json
+.claude/mcp-needs-auth-cache.json
+.claude.json
