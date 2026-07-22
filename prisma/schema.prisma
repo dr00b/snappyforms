@@ -1,0 +1,701 @@
+// VERWOVO — Phase 1 schema.
+// Deliberately excludes later-phase entities (ActivityRecord, Consent, FormTemplate,
+// BenefitProgram, APIClient, AuditLog, etc.) — see ROADMAP.md at the repo root.
+//
+// SQLite doesn't support native enum columns, so "enum-like" fields are plain String
+// columns whose allowed values are validated by Zod in src/lib/validation.ts.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String?  @unique
+  phone        String?  @unique
+  passwordHash String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  authMethods         AuthenticationMethod[]
+  sessions            Session[]
+  participantProfile  ParticipantProfile?
+  organizationMembers OrganizationMembership[]
+  recordConfirmations RecordConfirmation[]
+  disputesRaised      RecordDispute[]
+  notifications       Notification[]
+  auditLogs           AuditLog[]
+  generatedForms      GeneratedForm[]
+  shareLinks          ShareLink[]
+  formCertificationRequests   FormCertificationRequest[] @relation("FormCertRequester")
+  formCertificationsCertified FormCertificationRequest[] @relation("FormCertCertifier")
+  agencyMembers               AgencyMembership[]
+  agencyConsentsGranted       Consent[]
+}
+
+/// type: "PASSWORD" | "EMAIL_OTP" | "SMS_OTP" | "MAGIC_LINK"
+model AuthenticationMethod {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type       String
+  identifier String
+  verifiedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@unique([userId, type, identifier])
+  @@index([identifier])
+}
+
+/// purpose: "LOGIN" | "MAGIC_LINK"   channel: "EMAIL" | "SMS"
+model VerificationCode {
+  id          String    @id @default(cuid())
+  identifier  String
+  purpose     String
+  channel     String
+  codeHash    String
+  attempts    Int       @default(0)
+  maxAttempts Int       @default(5)
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([identifier, purpose])
+}
+
+model Session {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String    @unique
+  userAgent  String?
+  ipAddress  String?
+  createdAt  DateTime  @default(now())
+  lastSeenAt DateTime  @default(now())
+  expiresAt  DateTime
+  revokedAt  DateTime?
+
+  @@index([userId])
+}
+
+/// ownerType: "PARTICIPANT" | "ORGANIZATION"
+model Handle {
+  id                   String            @id @default(cuid())
+  value                String            @unique
+  displayValue         String
+  ownerType            String
+  participantProfileId String?           @unique
+  participantProfile   ParticipantProfile? @relation(fields: [participantProfileId], references: [id], onDelete: Cascade)
+  organizationId       String?           @unique
+  organization         Organization?     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+}
+
+model ParticipantProfile {
+  id                          String   @id @default(cuid())
+  userId                      String   @unique
+  user                        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName                 String
+  bio                         String?
+  avatarColor                 String   @default("teal")
+  searchable                  Boolean  @default(true)
+  showFullNameOnVerification  Boolean  @default(false)
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+
+  handle          Handle?
+  qrIdentifier    QRIdentifier?
+  activityRecords ActivityRecord[]
+  generatedForms  GeneratedForm[]
+  formCertificationRequests FormCertificationRequest[]
+  opportunitySignups OpportunitySignup[]
+  cases           ParticipantCase[]
+}
+
+/// type: "NONPROFIT" | "BUSINESS" | "GOVERNMENT" | "OTHER"
+model Organization {
+  id            String   @id @default(cuid())
+  name          String
+  type          String
+  website       String?
+  primaryEmail  String
+  domain        String?
+  addressLine1  String?
+  city          String?
+  state         String?
+  zip           String?
+  phone         String?
+  taxStatus     String?
+  einDemo       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  handle          Handle?
+  qrIdentifier    QRIdentifier?
+  memberships     OrganizationMembership[]
+  activityRecords ActivityRecord[]
+  auditLogs       AuditLog[]
+  generatedForms  GeneratedForm[]
+  formCertificationRequests FormCertificationRequest[]
+  domains         OrganizationDomain[]
+  locations       OrganizationLocation[]
+  opportunities   VolunteerOpportunity[]
+}
+
+/// role: "ADMIN" | "MEMBER"
+/// status: "REQUESTED" | "PENDING" | "ACTIVE" | "SUSPENDED"
+/// firstApprovalTargetType: "ACTIVITY_RECORD" | "FORM_CERTIFICATION_REQUEST"
+model OrganizationMembership {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName    String?
+  role           String
+  status         String       @default("ACTIVE")
+  joinedAt       DateTime     @default(now())
+
+  // Trust-ledger for the "PENDING members can verify immediately, first
+  // approval gets ratified by an admin" model — see the Phase 4 plan.
+  firstApprovalTargetType String?
+  firstApprovalTargetId   String?
+  firstApprovalAt         DateTime?
+  ratifiedByUserId        String?
+  ratifiedAt               DateTime?
+
+  verifiedRecords ActivityRecord[]
+  requestedFormCertifications FormCertificationRequest[]
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+}
+
+/// ownerType: "PARTICIPANT" | "ORGANIZATION" | "LOCATION" | "OPPORTUNITY"
+model QRIdentifier {
+  id                    String   @id @default(uuid())
+  ownerType             String
+  participantProfileId  String?  @unique
+  participantProfile    ParticipantProfile? @relation(fields: [participantProfileId], references: [id], onDelete: Cascade)
+  organizationId        String?  @unique
+  organization          Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  locationId            String?  @unique
+  location              OrganizationLocation? @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  opportunityId         String?  @unique
+  opportunity           VolunteerOpportunity? @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  createdAt             DateTime @default(now())
+  revokedAt             DateTime?
+}
+
+/// channel: "EMAIL" | "SMS" | "INAPP"
+model DevNotification {
+  id           String   @id @default(cuid())
+  channel      String
+  toIdentifier String
+  subject      String?
+  body         String
+  createdAt    DateTime @default(now())
+}
+
+// --- Phase 2: Verification ---------------------------------------------------
+// See ROADMAP.md / the Phase 2 plan for the status-machine and scope decisions
+// (which of the spec's 10 statuses are used, revision semantics, etc).
+
+/// category: "WORK" | "VOLUNTEER" | "EDUCATION" | "TRAINING" | "COMMUNITY_SERVICE" | "OTHER"
+/// initiatedBy: "PARTICIPANT" | "ORGANIZATION"
+/// paidStatus: "PAID" | "UNPAID"   locationType: "IN_PERSON" | "REMOTE"
+/// status: "AWAITING_ORGANIZATION" | "AWAITING_PARTICIPANT" | "CHANGES_REQUESTED" |
+///         "CONFIRMED" | "DECLINED" | "DISPUTED" | "SUPERSEDED" | "REVOKED"
+model ActivityRecord {
+  id                    String   @id @default(cuid())
+  participantProfileId  String
+  participantProfile    ParticipantProfile @relation(fields: [participantProfileId], references: [id], onDelete: Cascade)
+  organizationId        String
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  verifierMembershipId  String?
+  verifierMembership    OrganizationMembership? @relation(fields: [verifierMembershipId], references: [id])
+
+  initiatedBy    String
+  category       String
+  title          String
+  description    String?
+
+  startDate      DateTime?
+  endDate        DateTime?
+  activityDate   DateTime?
+  startTime      String?
+  endTime        String?
+  breakMinutes   Int?
+  totalHours     Float?
+  weeklyHours    Float?
+  monthlyHours   Float?
+
+  paidStatus              String?
+  locationType             String?
+  transportationProvided  Boolean @default(false)
+  supervisorName          String?
+  supervisorTitle         String?
+  supportingNotes         String?
+
+  status         String
+  revisionNumber Int    @default(1)
+
+  supersedesId String?         @unique
+  supersedes   ActivityRecord? @relation("Revisions", fields: [supersedesId], references: [id])
+  supersededBy ActivityRecord? @relation("Revisions")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  confirmations RecordConfirmation[]
+  disputes      RecordDispute[]
+  fraudFlags    FraudReviewFlag[]
+  notifications Notification[]
+
+  @@index([participantProfileId])
+  @@index([organizationId])
+}
+
+/// action: "CONFIRMED" | "DECLINED" | "CHANGES_REQUESTED"
+model RecordConfirmation {
+  id               String   @id @default(cuid())
+  activityRecordId String
+  activityRecord   ActivityRecord @relation(fields: [activityRecordId], references: [id], onDelete: Cascade)
+  confirmedByUserId String
+  confirmedByUser  User @relation(fields: [confirmedByUserId], references: [id])
+  action           String
+  message          String?
+  createdAt        DateTime @default(now())
+}
+
+/// status: "OPEN" | "RESOLVED"
+model RecordDispute {
+  id               String   @id @default(cuid())
+  activityRecordId String
+  activityRecord   ActivityRecord @relation(fields: [activityRecordId], references: [id], onDelete: Cascade)
+  raisedByUserId   String
+  raisedByUser     User @relation(fields: [raisedByUserId], references: [id])
+  reason           String
+  status           String   @default("OPEN")
+  createdAt        DateTime @default(now())
+  resolvedAt       DateTime?
+}
+
+/// type: "DUPLICATE" | "OVER_16_HOURS" | "OVERLAPPING" | "HIGH_MONTHLY_HOURS" |
+///       "RECENT_ORG" | "REPEATED_VERIFIER_PAIR"
+model FraudReviewFlag {
+  id               String   @id @default(cuid())
+  activityRecordId String
+  activityRecord   ActivityRecord @relation(fields: [activityRecordId], references: [id], onDelete: Cascade)
+  type             String
+  message          String
+  createdAt        DateTime @default(now())
+}
+
+model Notification {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type             String
+  title            String
+  body             String
+  activityRecordId String?
+  activityRecord   ActivityRecord? @relation(fields: [activityRecordId], references: [id], onDelete: SetNull)
+  readAt           DateTime?
+  createdAt        DateTime @default(now())
+
+  @@index([userId])
+}
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  actorUserId    String?
+  actorUser      User? @relation(fields: [actorUserId], references: [id])
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  agencyId       String?
+  agency         Agency? @relation(fields: [agencyId], references: [id])
+  action         String
+  targetType     String?
+  targetId       String?
+  priorStatus    String?
+  newStatus      String?
+  source         String   @default("web")
+  correlationId  String?
+  createdAt      DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([actorUserId])
+}
+
+// --- Phase 3: Documentation ---------------------------------------------------
+// See ROADMAP.md / the Phase 3 plan for scope decisions (FormTemplate is a static
+// config, not a table; ShareLink also backs the QR hub's "Form Request" tab).
+
+/// templateKey: "PA_1938" | "MONTHLY_SUMMARY" | "WORK_VERIFICATION" | "EDUCATION_VERIFICATION"
+model GeneratedForm {
+  id                    String   @id @default(cuid())
+  templateKey           String
+  participantProfileId  String
+  participantProfile    ParticipantProfile @relation(fields: [participantProfileId], references: [id], onDelete: Cascade)
+  organizationId        String
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  generatedByUserId     String
+  generatedByUser       User @relation(fields: [generatedByUserId], references: [id])
+  sourceRecordIds       String
+  fieldsSnapshot        String
+  pdfBytes              Bytes
+  createdAt             DateTime @default(now())
+
+  formCertificationRequest FormCertificationRequest?
+
+  @@index([participantProfileId])
+}
+
+/// resourceType: "ACTIVITY_RECORD" | "GENERATED_FORM"
+model ShareLink {
+  id             String    @id @default(uuid())
+  ownerUserId    String
+  ownerUser      User @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  resourceType   String
+  resourceId     String
+  label          String?
+  expiresAt      DateTime
+  createdAt      DateTime  @default(now())
+  revokedAt      DateTime?
+  accessCount    Int       @default(0)
+  lastAccessedAt DateTime?
+
+  @@index([ownerUserId])
+}
+
+// --- Phase 3 follow-up: collaborative PA 1938 certification -------------------
+// Participant submits volunteer + service info; an org rep certifies it in-app
+// (or declines / requests changes) before the participant finalizes the PDF.
+// See ROADMAP.md for why this only applies to PA 1938.
+
+/// templateKey: "PA_1938"
+/// status: "AWAITING_ORGANIZATION" | "CHANGES_REQUESTED" | "CERTIFIED" | "DECLINED" | "FINALIZED"
+model FormCertificationRequest {
+  id                    String   @id @default(cuid())
+  templateKey           String
+
+  participantProfileId  String
+  participantProfile    ParticipantProfile @relation(fields: [participantProfileId], references: [id], onDelete: Cascade)
+  organizationId        String
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  requestedByUserId     String
+  requestedByUser       User @relation("FormCertRequester", fields: [requestedByUserId], references: [id])
+  verifierMembershipId  String?
+  verifierMembership    OrganizationMembership? @relation(fields: [verifierMembershipId], references: [id])
+
+  status                String
+  changeRequestMessage  String?
+
+  participantFullName String
+  participantDob       String
+  participantAddress   String
+  participantCity      String
+  participantState     String
+  participantZip       String
+
+  agencyName    String
+  agencyPhone   String
+  agencyAddress String
+  agencyCity    String
+  agencyState   String
+  agencyZip     String
+
+  serviceStartDate       String
+  serviceEndDate         String
+  transportationProvided Boolean @default(false)
+  week1Hours Float
+  week2Hours Float
+  week3Hours Float
+  week4Hours Float
+  tasks      String
+
+  sourceRecordId String?
+
+  siteManagerName   String?
+  siteManagerTitle  String?
+  confirmationDate  String?
+  signature         String?
+  certifiedByUserId String?
+  certifiedByUser   User? @relation("FormCertCertifier", fields: [certifiedByUserId], references: [id])
+  certifiedAt       DateTime?
+
+  generatedFormId String?        @unique
+  generatedForm   GeneratedForm? @relation(fields: [generatedFormId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([participantProfileId])
+  @@index([organizationId])
+}
+
+// --- Phase 4: Organization model ----------------------------------------------
+// See ROADMAP.md / the Phase 4 plan for the membership trust model (REQUESTED ->
+// PENDING -> ACTIVE via first-approval ratification, rather than gating
+// verification behind admin approval up front).
+
+/// status: "PENDING" | "VERIFIED"
+model OrganizationDomain {
+  id                String   @id @default(cuid())
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  domain            String
+  status            String
+  verificationToken String
+  allowAutoJoin     Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  verifiedAt        DateTime?
+
+  @@unique([organizationId, domain])
+}
+
+model OrganizationLocation {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  addressLine1   String?
+  city           String?
+  state          String?
+  zip            String?
+  phone          String?
+  createdAt      DateTime @default(now())
+
+  qrIdentifier  QRIdentifier?
+  opportunities VolunteerOpportunity[]
+}
+
+/// remoteOrInPerson: "IN_PERSON" | "REMOTE"
+model VolunteerOpportunity {
+  id              String   @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  locationId      String?
+  location        OrganizationLocation? @relation(fields: [locationId], references: [id])
+  createdByUserId String
+
+  title          String
+  description    String?
+  date           DateTime
+  startTime      String?
+  endTime        String?
+  openings       Int      @default(1)
+  taskCategory   String?
+  contactPerson  String?
+  minimumAge     Int?
+  accessibilityInfo       String?
+  transportationInfo      String?
+  backgroundCheckRequired Boolean @default(false)
+  trainingRequired        Boolean @default(false)
+  remoteOrInPerson        String  @default("IN_PERSON")
+
+  createdAt DateTime @default(now())
+
+  qrIdentifier QRIdentifier?
+  signups      OpportunitySignup[]
+
+  @@index([organizationId])
+}
+
+/// status: "SIGNED_UP" | "CANCELLED" | "CHECKED_IN"
+model OpportunitySignup {
+  id                    String   @id @default(cuid())
+  opportunityId         String
+  opportunity           VolunteerOpportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  participantProfileId  String
+  participantProfile    ParticipantProfile @relation(fields: [participantProfileId], references: [id], onDelete: Cascade)
+  status                String
+  signedUpAt            DateTime @default(now())
+  checkedInAt           DateTime?
+
+  @@unique([opportunityId, participantProfileId])
+}
+
+// --- Phase 5: Future integration demonstration --------------------------------
+// A simulated government-benefits agency integration: fictional case data with
+// encrypted case numbers, a participant-facing consent center gating what an
+// agency can see, and a simulated secure API (client-credential auth, scopes,
+// request audit log, bulk-query) an external eligibility system could call.
+// Agencies are administratively provisioned (seed-only, no self-service join),
+// so AgencyMembership deliberately skips the Phase 4 trust/ratification model.
+// See ROADMAP.md / the Phase 5 plan for the full set of scope decisions.
+
+model Agency {
+  id           String   @id @default(cuid())
+  name         String
+  county       String?
+  addressLine1 String?
+  city         String?
+  state        String?
+  zip          String?
+  phone        String?
+  createdAt    DateTime @default(now())
+
+  memberships     AgencyMembership[]
+  benefitPrograms BenefitProgram[]
+  cases           ParticipantCase[]
+  apiClients      APIClient[]
+  bulkQueryJobs   BulkQueryJob[]
+  auditLogs       AuditLog[]
+}
+
+/// role: "ADMIN" | "STAFF"
+/// status: "ACTIVE" | "SUSPENDED"
+model AgencyMembership {
+  id          String   @id @default(cuid())
+  agencyId    String
+  agency      Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName String?
+  role        String
+  status      String   @default("ACTIVE")
+  joinedAt    DateTime @default(now())
+
+  bulkQueryJobs BulkQueryJob[]
+
+  @@unique([agencyId, userId])
+  @@index([userId])
+}
+
+model BenefitProgram {
+  id                    String   @id @default(cuid())
+  agencyId              String
+  agency                Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  name                  String
+  code                  String
+  description           String?
+  requiredHoursPerMonth Float?
+  createdAt             DateTime @default(now())
+
+  cases         ParticipantCase[]
+  bulkQueryJobs BulkQueryJob[]
+
+  @@unique([agencyId, code])
+}
+
+/// status: "OPEN" | "CLOSED"
+model ParticipantCase {
+  id                   String   @id @default(cuid())
+  participantProfileId String
+  participantProfile   ParticipantProfile @relation(fields: [participantProfileId], references: [id], onDelete: Cascade)
+  agencyId             String
+  agency               Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  benefitProgramId     String
+  benefitProgram       BenefitProgram @relation(fields: [benefitProgramId], references: [id])
+
+  caseNumberEncrypted  String   // "iv:authTag:ciphertext" hex, AES-256-GCM — see src/lib/encryption.ts
+  caseNumberLast4      String   // plaintext last 4 chars only, for masked display without decrypting
+
+  status    String   @default("OPEN")
+  openedAt  DateTime @default(now())
+  closedAt  DateTime?
+  createdAt DateTime @default(now())
+
+  consent     Consent?
+  bulkResults BulkQueryResult[]
+  apiRequests APIRequest[]
+
+  @@index([participantProfileId])
+  @@index([agencyId])
+  @@index([benefitProgramId])
+}
+
+/// scope: "HOURS_VERIFICATION"
+model Consent {
+  id                String   @id @default(cuid())
+  participantCaseId String   @unique
+  participantCase   ParticipantCase @relation(fields: [participantCaseId], references: [id], onDelete: Cascade)
+  scope             String   @default("HOURS_VERIFICATION")
+  grantedByUserId   String
+  grantedByUser     User     @relation(fields: [grantedByUserId], references: [id])
+  grantedAt         DateTime @default(now())
+  revokedAt         DateTime?
+}
+
+/// status: "ACTIVE" | "REVOKED"
+model APIClient {
+  id               String   @id @default(cuid())
+  agencyId         String
+  agency           Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  name             String
+  clientId         String   @unique
+  clientSecretHash String
+  scopes           String   // JSON.stringify'd string[], e.g. ["cases:verification:read"]
+  status           String   @default("ACTIVE")
+  createdAt        DateTime @default(now())
+  revokedAt        DateTime?
+
+  apiRequests APIRequest[]
+}
+
+/// outcome: "SUCCESS" | "AUTH_FAILED" | "FORBIDDEN_SCOPE" | "NO_CONSENT" | "NOT_FOUND" | "RATE_LIMITED"
+model APIRequest {
+  id                String   @id @default(cuid())
+  apiClientId       String?
+  apiClient         APIClient? @relation(fields: [apiClientId], references: [id], onDelete: SetNull)
+  clientIdAttempted String?
+  endpoint          String
+  method            String
+  participantCaseId String?
+  participantCase   ParticipantCase? @relation(fields: [participantCaseId], references: [id], onDelete: SetNull)
+  outcome           String
+  statusCode        Int
+  responseSummary   String?
+  createdAt         DateTime @default(now())
+
+  @@index([apiClientId])
+  @@index([createdAt])
+}
+
+model BulkQueryJob {
+  id                      String   @id @default(cuid())
+  agencyId                String
+  agency                  Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  benefitProgramId        String
+  benefitProgram          BenefitProgram @relation(fields: [benefitProgramId], references: [id])
+  requestedByMembershipId String
+  requestedByMembership   AgencyMembership @relation(fields: [requestedByMembershipId], references: [id])
+
+  totalCases    Int
+  includedCount Int
+  excludedCount Int
+
+  createdAt   DateTime @default(now())
+  completedAt DateTime?
+
+  results BulkQueryResult[]
+
+  @@index([agencyId])
+}
+
+/// excludedReason: "NO_CONSENT"
+model BulkQueryResult {
+  id                String   @id @default(cuid())
+  bulkQueryJobId    String
+  bulkQueryJob      BulkQueryJob @relation(fields: [bulkQueryJobId], references: [id], onDelete: Cascade)
+  participantCaseId String
+  participantCase   ParticipantCase @relation(fields: [participantCaseId], references: [id], onDelete: Cascade)
+
+  included         Boolean
+  excludedReason   String?
+  hoursConfirmed   Float?
+  hoursRequired    Float?
+  meetsRequirement Boolean?
+
+  createdAt DateTime @default(now())
+
+  @@index([bulkQueryJobId])
+}
