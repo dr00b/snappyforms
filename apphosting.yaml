@@ -1,0 +1,54 @@
+# Firebase App Hosting configuration for VERWOVO (Next.js 14 + Prisma/PostgreSQL).
+# Docs: https://firebase.google.com/docs/app-hosting/configure
+#
+# Prerequisites:
+#   1. Create the secrets in Google Cloud Secret Manager and grant the App Hosting
+#      backend access, e.g.:
+#        firebase apphosting:secrets:set DATABASE_URL
+#        firebase apphosting:secrets:set SESSION_SECRET
+#        firebase apphosting:secrets:set CASE_DATA_ENCRYPTION_KEY
+#   2. Apply migrations to the production database before/at release — App Hosting
+#      builds and serves but does NOT run `prisma migrate deploy`:
+#        DATABASE_URL="<prod-url>" npx prisma migrate deploy
+#   3. For serverless/Neon, point DATABASE_URL at a POOLED connection string so
+#      multiple instances don't exhaust Postgres connections.
+
+runConfig:
+  minInstances: 0
+  maxInstances: 2
+  concurrency: 80
+
+env:
+  # --- Secrets (resolved from Secret Manager, runtime only) ---
+  - variable: DATABASE_URL
+    secret: DATABASE_URL
+    availability:
+      - RUNTIME
+  - variable: SESSION_SECRET
+    secret: SESSION_SECRET
+    availability:
+      - RUNTIME
+  - variable: CASE_DATA_ENCRYPTION_KEY
+    secret: CASE_DATA_ENCRYPTION_KEY
+    availability:
+      - RUNTIME
+
+  # --- Plain config ---
+  - variable: APP_BASE_URL
+    value: https://REPLACE-with-your-app-domain
+    availability:
+      - RUNTIME
+
+  # Demo-only features (seeded login buttons, /dev/inbox). Keep OFF in a real deploy.
+  - variable: DEMO_MODE
+    value: "false"
+    availability:
+      - RUNTIME
+
+  # NEXT_PUBLIC_* is inlined into the client bundle at build time, so it must be
+  # available during BUILD (RUNTIME kept for parity).
+  - variable: NEXT_PUBLIC_DEMO_MODE
+    value: "false"
+    availability:
+      - BUILD
+      - RUNTIME
