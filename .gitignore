@@ -9,6 +9,9 @@ dist
 .DS_Store
 npm-debug.log*
 
+# Firebase
+firebase-debug.log
+
 
 # Claude Code local config and state
 CLAUDE.local.md
