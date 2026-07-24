@@ -11,7 +11,12 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
-    "db:reset": "prisma migrate reset --force"
+    "db:reset": "prisma migrate reset --force",
+    "smoke": "node smoke.mjs",
+    "test": "node smoke.mjs",
+    "test:e2e": "docker compose up --build --exit-code-from pw-tests",
+    "docker:up": "docker compose up --build webapp",
+    "docker:down": "docker compose down -v"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

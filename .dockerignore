@@ -1,0 +1,17 @@
+# Keep the build context small and force clean, in-container installs so no
+# host-platform binaries (node_modules, Prisma engines) leak into the image.
+node_modules
+.next
+.next-smoke
+npm-debug.log*
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+prisma/dev.db
+prisma/*.db
+*.md
+.DS_Store
+.claude
+tsconfig.tsbuildinfo

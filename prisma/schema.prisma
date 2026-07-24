@@ -2,15 +2,16 @@
 // Deliberately excludes later-phase entities (ActivityRecord, Consent, FormTemplate,
 // BenefitProgram, APIClient, AuditLog, etc.) — see ROADMAP.md at the repo root.
 //
-// SQLite doesn't support native enum columns, so "enum-like" fields are plain String
-// columns whose allowed values are validated by Zod in src/lib/validation.ts.
+// "enum-like" fields are plain String columns (a carryover from the original SQLite
+// prototype) whose allowed values are validated by Zod in src/lib/validation.ts. The
+// datasource is now PostgreSQL; these could be promoted to native enums later.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

@@ -16,7 +16,7 @@ export async function GET(request: Request) {
         where: {
           searchable: true,
           OR: [
-            { displayName: { contains: needle } },
+            { displayName: { contains: needle, mode: "insensitive" } },
             { handle: { value: { contains: needle.toLowerCase() } } },
           ],
         },
@@ -26,7 +26,7 @@ export async function GET(request: Request) {
       db.organization.findMany({
         where: {
           OR: [
-            { name: { contains: needle } },
+            { name: { contains: needle, mode: "insensitive" } },
             { handle: { value: { contains: needle.toLowerCase() } } },
           ],
         },

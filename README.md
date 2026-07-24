@@ -23,18 +23,23 @@ tool). See [ROADMAP.md](./ROADMAP.md) for what's deliberately still out of scope
 ## Stack
 
 Next.js 14 (App Router) + TypeScript + Tailwind CSS, hand-built shadcn/ui-style components on top
-of Radix primitives, Prisma + SQLite, Zod validation, `qrcode` + `jsqr` for QR generate/scan,
+of Radix primitives, Prisma + PostgreSQL, Zod validation, `qrcode` + `jsqr` for QR generate/scan,
 `pdf-lib` for PDF generation.
 
 ## Getting started
 
 ```bash
 npm install
-cp .env.example .env   # already done for you locally; edit if needed
-npm run db:migrate     # creates dev.db and applies the schema
+cp .env.example .env   # then set DATABASE_URL to your Postgres connection string
+npm run db:migrate     # applies the schema to your database
 npm run db:seed        # seeds demo accounts
 npm run dev            # http://localhost:3000
 ```
+
+Any PostgreSQL works — a local instance or a hosted provider (Neon, Supabase, RDS, …).
+A quick browserless smoke test (`npm run smoke`) logs in and exercises the core
+Postgres-backed flows against a running server (defaults to `http://localhost:3000`,
+override with `BASE_URL`).
 
 ## Demo accounts
 
@@ -152,9 +157,28 @@ src/middleware.ts        Protects /dashboard, /qr, /settings, /onboarding, /acti
 
 ## Database
 
-SQLite via Prisma for zero-setup local development. The data-access layer (`src/lib/db.ts`, plain
-Prisma Client calls throughout) has no SQLite-specific query logic, so migrating to Postgres later
-is a matter of changing `prisma/schema.prisma`'s `datasource` block and `DATABASE_URL`, then
-re-running migrations.
+PostgreSQL via Prisma. The data-access layer (`src/lib/db.ts`, plain Prisma Client calls
+throughout) is provider-agnostic, so the app runs against any Postgres — local or hosted.
+Point `DATABASE_URL` at your database and run `npm run db:migrate`.
 
 Useful commands: `npm run db:studio` (browse data), `npm run db:reset` (wipe + reseed).
+
+## Containerized environment (no host installs)
+
+A self-contained Docker stack runs Postgres + the app + the Playwright browser tests
+without installing Node, browsers, or a database on your machine, and without touching
+any remote database. Requires only Docker (on WSL, enable Docker Desktop's WSL
+integration).
+
+```bash
+npm run test:e2e     # build + run Postgres + app + Playwright; exits with the test result
+npm run docker:up    # just the app + Postgres at http://localhost:3000 (no tests)
+npm run docker:down  # stop everything and drop the Postgres volume
+```
+
+- `docker/Dockerfile.app` — builds and serves the Next app (the `webapp` service); applies migrations and seeds on start.
+- `docker/Dockerfile.pw` — official `mcr.microsoft.com/playwright` image (browsers + system libs baked in), pinned to the project's Playwright version.
+- `docker-compose.yml` — wires the three services together with health-gated startup.
+
+Two test entry points: `npm run smoke` (browserless `fetch`, runs anywhere against a
+live server) and the containerized `pw-smoke.mjs` (real Chromium, driven via `npm run test:e2e`).

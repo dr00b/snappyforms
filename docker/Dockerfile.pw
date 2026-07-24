@@ -1,0 +1,15 @@
+# Playwright browser-test runner. The official image already ships Chromium/WebKit
+# and every system library they need — nothing is installed on the host.
+# Tag is pinned to the exact Playwright version in package-lock.json (1.61.1).
+FROM mcr.microsoft.com/playwright:v1.61.1-noble
+
+WORKDIR /tests
+
+# Browsers are already baked into this image; skip re-downloading them and just
+# install the matching Playwright JS package.
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+RUN npm init -y >/dev/null 2>&1 && npm i playwright@1.61.1
+
+COPY pw-smoke.mjs ./
+
+CMD ["node", "pw-smoke.mjs"]

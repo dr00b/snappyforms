@@ -1,0 +1,70 @@
+# Self-contained VERWOVO environment: Postgres + app + Playwright browser tests,
+# all in containers. Nothing is installed on the host and this never touches the
+# remote Neon database. Run it with:
+#
+#   docker compose up --build --exit-code-from pw-tests
+#
+# The process exits with the Playwright test's exit code (0 = all green).
+# For just an interactive app (no tests): `docker compose up --build webapp`.
+#
+# NOTE: the secrets below are throwaway values for this local demo/test stack only.
+# NOTE: the app service is named "webapp", not "app" — the ".app" TLD is HSTS-preloaded
+# in Chromium, so a bare "app" hostname forces HTTPS and breaks the browser test.
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: verwovo
+      POSTGRES_PASSWORD: verwovo
+      POSTGRES_DB: verwovo
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U verwovo -d verwovo"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  webapp:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.app
+    environment:
+      DATABASE_URL: postgresql://verwovo:verwovo@db:5432/verwovo?schema=public
+      SESSION_SECRET: c66052eed1f506e0abf2999babf5138a233eed0a3e99c335d71d280c0564eba3
+      CASE_DATA_ENCRYPTION_KEY: 050c6f79864334c1bf7f6fb520489a89ac39f5a991956801bd21a12756ba5cb6
+      DEMO_MODE: "true"
+      NEXT_PUBLIC_DEMO_MODE: "true"
+      APP_BASE_URL: http://localhost:3000
+      # This stack serves the production build over plain HTTP, so allow the
+      # session cookie to be set without the Secure flag. Local/test only.
+      INSECURE_HTTP_COOKIES: "true"
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3000:3000" # browse the app at http://localhost:3000
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://localhost:3000/login').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 5s
+      timeout: 5s
+      retries: 40
+      start_period: 40s
+
+  pw-tests:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.pw
+    environment:
+      BASE_URL: http://webapp:3000
+    depends_on:
+      webapp:
+        condition: service_healthy
+
+volumes:
+  pgdata:

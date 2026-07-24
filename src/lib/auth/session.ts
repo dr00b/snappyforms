@@ -41,7 +41,11 @@ export async function createSession(userId: string, request: Request) {
 export function setSessionCookie(token: string) {
   cookies().set(SESSION_COOKIE, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    // Secure in production, except when explicitly opted out for local HTTP e2e
+    // (e.g. the containerized Playwright stack serves the prod build over plain
+    // http). Never set INSECURE_HTTP_COOKIES in a real deployment — a Secure
+    // cookie is what keeps the session off unencrypted connections.
+    secure: process.env.NODE_ENV === "production" && process.env.INSECURE_HTTP_COOKIES !== "true",
     sameSite: "lax",
     path: "/",
     maxAge: SESSION_TTL_MS / 1000,
