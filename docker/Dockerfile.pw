@@ -11,5 +11,6 @@ ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 RUN npm init -y >/dev/null 2>&1 && npm i playwright@1.61.1
 
 COPY pw-smoke.mjs ./
+COPY e2e ./e2e
 
 CMD ["node", "pw-smoke.mjs"]

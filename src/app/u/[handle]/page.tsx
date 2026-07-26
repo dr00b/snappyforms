@@ -24,7 +24,32 @@ export default async function ParticipantProfilePage({ params }: { params: { han
     ? await generateQrDataUrl(qrTargetUrl(profile.qrIdentifier.id))
     : null;
   const session = await getCurrentSession();
-  const canCreateRecord = Boolean(session?.user.organizationMembers.some((m) => m.status === "ACTIVE"));
+
+  // Orgs the viewer can verify for (ACTIVE/PENDING members are verifier-eligible).
+  const viewerOrgIds = session
+    ? (
+        await db.organizationMembership.findMany({
+          where: { userId: session.userId, status: { in: ["ACTIVE", "PENDING"] } },
+          select: { organizationId: true },
+        })
+      ).map((m) => m.organizationId)
+    : [];
+  const canCreateRecord = viewerOrgIds.length > 0;
+
+  // Shifts this participant logged that are awaiting confirmation from one of the
+  // viewer's orgs. This is what lets an authorizer scan a participant's QR and
+  // approve the shift they just logged.
+  const pendingForViewer = viewerOrgIds.length
+    ? await db.activityRecord.findMany({
+        where: {
+          participantProfileId: profile.id,
+          organizationId: { in: viewerOrgIds },
+          status: "AWAITING_ORGANIZATION",
+        },
+        include: { organization: true },
+        orderBy: { updatedAt: "desc" },
+      })
+    : [];
 
   return (
     <div className="flex flex-1 flex-col gap-6 px-6 py-10">
@@ -47,12 +72,36 @@ export default async function ParticipantProfilePage({ params }: { params: { han
         <img src={qrImage} alt="QR code" className="mx-auto h-48 w-48 rounded-lg border border-border bg-white p-3" />
       )}
 
+      {pendingForViewer.length > 0 && (
+        <Card className="border-primary/40">
+          <CardHeader>
+            <CardTitle className="text-base">Shifts awaiting your confirmation</CardTitle>
+            <CardDescription>
+              This participant logged {pendingForViewer.length === 1 ? "a shift" : "shifts"} for your
+              organization. Review and authorize.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2">
+            {pendingForViewer.map((r) => (
+              <Button key={r.id} asChild variant="outline" className="justify-between">
+                <Link href={`/activity/${r.id}`}>
+                  <span>{r.title}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {r.totalHours ? `${r.totalHours}h · ` : ""}Review &amp; confirm →
+                  </span>
+                </Link>
+              </Button>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
       {canCreateRecord && (
-        <Button asChild>
+        <Button asChild variant={pendingForViewer.length > 0 ? "ghost" : "default"}>
           <Link
             href={`/activity/new-for-participant?participantHandle=${handle.value}&participantName=${encodeURIComponent(profile.displayName)}`}
           >
-            Create activity record
+            Log a new shift for this participant
           </Link>
         </Button>
       )}

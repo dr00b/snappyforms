@@ -44,8 +44,18 @@ export default function QrHubPage() {
   const [manualHandle, setManualHandle] = useState("");
   const [scanError, setScanError] = useState<string | null>(null);
   const [hasParticipant, setHasParticipant] = useState(false);
+  const [tab, setTab] = useState("scan-me");
   const [shareableRecords, setShareableRecords] = useState<ShareableRecord[]>([]);
   const [shareableForms, setShareableForms] = useState<ShareableForm[]>([]);
+
+  // Allow deep-linking a starting tab, e.g. /qr?tab=scan-code (used when an
+  // authorizer joins the live demo and needs to scan a participant).
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("tab");
+    if (requested === "scan-code" || requested === "scan-me" || requested === "form-request") {
+      setTab(requested);
+    }
+  }, []);
 
   useEffect(() => {
     fetch("/api/me")
@@ -155,7 +165,7 @@ export default function QrHubPage() {
     <div className="flex flex-col gap-6 px-6 py-8">
       <h1 className="text-2xl font-bold">QR</h1>
 
-      <Tabs defaultValue="scan-me">
+      <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
           <TabsTrigger value="scan-code">Scan Code</TabsTrigger>
           <TabsTrigger value="scan-me">Scan Me</TabsTrigger>

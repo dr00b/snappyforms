@@ -66,5 +66,23 @@ services:
       webapp:
         condition: service_healthy
 
+  # The two demo user-story tests (participant logs a shift, authorizer scans the
+  # QR and confirms it). Same image as pw-tests; run explicitly, e.g.
+  #   docker compose up --build --exit-code-from demo-stories demo-stories
+  # Screenshots of each stage are written to ./e2e/screenshots on the host.
+  demo-stories:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.pw
+    command: ["node", "e2e/demo-stories.mjs"]
+    environment:
+      BASE_URL: http://webapp:3000
+      SHOT_DIR: /tests/screenshots
+    volumes:
+      - ./e2e/screenshots:/tests/screenshots
+    depends_on:
+      webapp:
+        condition: service_healthy
+
 volumes:
   pgdata:
