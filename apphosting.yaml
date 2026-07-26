@@ -48,7 +48,7 @@ env:
 
   # --- Plain config ---
   - variable: APP_BASE_URL
-    value: https://demo.snappyforms.us
+    value: https://snappyforms.us
     availability:
       - RUNTIME
 
