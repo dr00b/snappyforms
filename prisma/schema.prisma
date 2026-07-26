@@ -37,6 +37,8 @@ model User {
   formCertificationsCertified FormCertificationRequest[] @relation("FormCertCertifier")
   agencyMembers               AgencyMembership[]
   agencyConsentsGranted       Consent[]
+  faxTransmissions            FaxTransmission[]
+  advocacyMessages            AdvocacyMessage[]
 }
 
 /// type: "PASSWORD" | "EMAIL_OTP" | "SMS_OTP" | "MAGIC_LINK"
@@ -357,8 +359,55 @@ model GeneratedForm {
   createdAt             DateTime @default(now())
 
   formCertificationRequest FormCertificationRequest?
+  faxTransmissions         FaxTransmission[]
 
   @@index([participantProfileId])
+}
+
+// --- The paper rail: what a participant does with a finished form today ------
+// Simulated end to end. Nothing is dialed and nothing leaves the process — the
+// point is to show the step the interoperability work is meant to delete.
+
+/// status: "SENT"
+model FaxTransmission {
+  id                 String   @id @default(cuid())
+  generatedFormId    String
+  generatedForm      GeneratedForm @relation(fields: [generatedFormId], references: [id], onDelete: Cascade)
+  sentByUserId       String
+  sentByUser         User @relation(fields: [sentByUserId], references: [id])
+  participantCaseId  String?
+  participantCase    ParticipantCase? @relation(fields: [participantCaseId], references: [id], onDelete: SetNull)
+
+  destinationName    String
+  destinationFax     String
+  /// Masked (last 4) — the cover sheet never carries the full case number.
+  caseNumberLast4    String?
+  pageCount          Int
+  confirmationNumber String   @unique
+  status             String   @default("SENT")
+  /// Cover sheet + form, exactly as "transmitted", so the demo can show the artifact.
+  pdfBytes           Bytes
+  createdAt          DateTime @default(now())
+
+  @@index([generatedFormId])
+  @@index([sentByUserId])
+}
+
+/// A drafted call for benefits-data interoperability. Demonstration only: the
+/// recipient is a placeholder district office, and nothing is transmitted.
+model AdvocacyMessage {
+  id                 String   @id @default(cuid())
+  userId             String
+  user               User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  faxTransmissionId  String?
+
+  zip                String
+  recipientName      String
+  recipientOffice    String
+  body               String
+  createdAt          DateTime @default(now())
+
+  @@index([userId])
 }
 
 /// resourceType: "ACTIVITY_RECORD" | "GENERATED_FORM"
@@ -559,6 +608,7 @@ model Agency {
   state        String?
   zip          String?
   phone        String?
+  faxNumber    String?
   createdAt    DateTime @default(now())
 
   memberships     AgencyMembership[]
@@ -622,9 +672,10 @@ model ParticipantCase {
   closedAt  DateTime?
   createdAt DateTime @default(now())
 
-  consent     Consent?
-  bulkResults BulkQueryResult[]
-  apiRequests APIRequest[]
+  consent          Consent?
+  bulkResults      BulkQueryResult[]
+  apiRequests      APIRequest[]
+  faxTransmissions FaxTransmission[]
 
   @@index([participantProfileId])
   @@index([agencyId])

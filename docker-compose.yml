@@ -101,5 +101,22 @@ services:
       webapp:
         condition: service_healthy
 
+  # The presentation walkthrough: Maya requests confirmation, Northside confirms
+  # it, and Maya faxes the resulting PA 1895 to her caseworker. Run explicitly:
+  #   docker compose up --build --exit-code-from maya-story maya-story
+  maya-story:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.pw
+    command: ["node", "e2e/maya-confirmation-story.mjs"]
+    environment:
+      BASE_URL: http://webapp:3000
+      SHOT_DIR: /tests/screenshots
+    volumes:
+      - ./e2e/screenshots:/tests/screenshots
+    depends_on:
+      webapp:
+        condition: service_healthy
+
 volumes:
   pgdata:

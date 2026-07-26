@@ -6,7 +6,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ShareLinkPanel } from "@/components/ShareLinkPanel";
-import { FORM_TEMPLATE_LIST, type FormTemplateKey } from "@/lib/formTemplates";
+import { FaxPanel } from "@/components/FaxPanel";
+import { FORM_TEMPLATES, FORM_TEMPLATE_LIST, type FormTemplateKey } from "@/lib/formTemplates";
 import { CATEGORY_LABELS, FORM_CERT_STATUS_LABELS, FORM_CERT_STATUS_BADGE_VARIANT } from "@/lib/activityLabels";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Download } from "lucide-react";
@@ -84,13 +85,16 @@ function GenericGenerator({ templateKey, sourceCategories }: { templateKey: Form
 
   if (result) {
     return (
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2" data-testid="form-ready">
         <p className="text-sm text-primary">Document ready.</p>
-        <Button asChild size="sm">
-          <a href={`/api/generated-forms/${result}/download`}>
-            <Download className="mr-1 h-4 w-4" /> Download PDF
-          </a>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild size="sm">
+            <a href={`/api/generated-forms/${result}/download`} data-testid="download-form">
+              <Download className="mr-1 h-4 w-4" /> Download PDF
+            </a>
+          </Button>
+        </div>
+        <FaxPanel generatedFormId={result} formName={FORM_TEMPLATES[templateKey].name} />
       </div>
     );
   }
@@ -102,7 +106,11 @@ function GenericGenerator({ templateKey, sourceCategories }: { templateKey: Form
   return (
     <div className="flex flex-col gap-2">
       {records.map((r) => (
-        <label key={r.id} className="flex items-center gap-2 rounded-md border border-border p-2 text-sm">
+        <label
+          key={r.id}
+          data-testid="record-option"
+          className="flex items-center gap-2 rounded-md border border-border p-2 text-sm"
+        >
           <input type="checkbox" checked={selected.has(r.id)} onChange={() => toggle(r.id)} />
           <span className="flex-1">
             {r.title}
@@ -115,7 +123,12 @@ function GenericGenerator({ templateKey, sourceCategories }: { templateKey: Form
       ))}
       {multiOrg && <p className="text-xs text-destructive">Select records from a single organization only.</p>}
       {error && <p className="text-xs text-destructive">{error}</p>}
-      <Button size="sm" disabled={selected.size === 0 || multiOrg || loading} onClick={generate}>
+      <Button
+        size="sm"
+        disabled={selected.size === 0 || multiOrg || loading}
+        data-testid="generate-form"
+        onClick={generate}
+      >
         {loading ? "Generating..." : "Generate document"}
       </Button>
     </div>
@@ -153,7 +166,7 @@ export default function FormsPage() {
 
         <TabsContent value="templates" className="flex flex-col gap-3">
           {FORM_TEMPLATE_LIST.map((t) => (
-            <Card key={t.key}>
+            <Card key={t.key} data-testid={`template-${t.key}`}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
                   <FileText className="h-4 w-4" /> {t.name}
@@ -168,7 +181,12 @@ export default function FormsPage() {
                 ) : expanded === t.key ? (
                   <GenericGenerator templateKey={t.key} sourceCategories={t.sourceCategories} />
                 ) : (
-                  <Button size="sm" variant="outline" onClick={() => setExpanded(t.key)}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    data-testid={`choose-${t.key}`}
+                    onClick={() => setExpanded(t.key)}
+                  >
                     Choose records
                   </Button>
                 )}
@@ -197,7 +215,16 @@ export default function FormsPage() {
                     </a>
                   </Button>
                 </div>
-                <ShareLinkPanel resourceType="GENERATED_FORM" resourceId={d.id} label={d.templateKey} />
+                <div className="flex flex-wrap gap-2">
+                  <ShareLinkPanel resourceType="GENERATED_FORM" resourceId={d.id} label={d.templateKey} />
+                  <FaxPanel
+                    generatedFormId={d.id}
+                    formName={
+                      FORM_TEMPLATES[d.templateKey as FormTemplateKey]?.name ??
+                      d.templateKey.replaceAll("_", " ")
+                    }
+                  />
+                </div>
               </CardContent>
             </Card>
           ))}

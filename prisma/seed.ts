@@ -379,6 +379,7 @@ async function main() {
       state: "PA",
       zip: "17101",
       phone: "555-010-4000",
+      faxNumber: "555-010-4099",
     },
   });
 

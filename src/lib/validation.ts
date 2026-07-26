@@ -255,3 +255,16 @@ export const shiftScanConfirmSchema = z.object({
 export const runBulkQuerySchema = z.object({
   benefitProgramId: nonEmpty(120),
 });
+
+// --- The paper rail: simulated fax + the advocacy prompt that follows it ------
+
+export const sendFaxSchema = z.object({
+  /** Which open case this submission is for; the destination fax comes from its agency. */
+  participantCaseId: nonEmpty(120),
+});
+
+export const advocacyMessageSchema = z.object({
+  zip: z.string().trim().regex(/^\d{5}$/, "Enter a 5-digit ZIP code"),
+  body: nonEmpty(4000),
+  faxTransmissionId: z.string().trim().max(120).optional(),
+});
