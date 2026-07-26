@@ -1,4 +1,4 @@
-# VERWOVO app image — Next.js 14 + Prisma, built and served entirely in-container.
+# SnappyForms app image — Next.js 14 + Prisma, built and served entirely in-container.
 # Prisma Client is generated inside the image so its engine matches this platform.
 FROM node:22-bookworm-slim
 

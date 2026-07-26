@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     await logNotification({
       channel,
       toIdentifier: identifier,
-      subject: "Your VERWOVO sign-in link",
+      subject: "Your SnappyForms sign-in link",
       body: `Tap to sign in: ${link}`,
     });
 

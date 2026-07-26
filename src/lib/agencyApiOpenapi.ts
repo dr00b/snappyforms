@@ -4,7 +4,7 @@
 export const agencyApiOpenapiSpec = {
   openapi: "3.0.3",
   info: {
-    title: "VERWOVO Agency Integration API (demonstration)",
+    title: "SnappyForms Agency Integration API (demonstration)",
     version: "1.0.0",
     description:
       "Simulated read-only API a benefits agency's eligibility system could call to check " +
@@ -24,13 +24,13 @@ export const agencyApiOpenapiSpec = {
             schema: { type: "string" },
           },
           {
-            name: "x-verwovo-client-id",
+            name: "x-snappyforms-client-id",
             in: "header",
             required: true,
             schema: { type: "string" },
           },
           {
-            name: "x-verwovo-client-secret",
+            name: "x-snappyforms-client-secret",
             in: "header",
             required: true,
             schema: { type: "string" },

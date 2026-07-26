@@ -1,6 +1,6 @@
-# Deploying VERWOVO to Firebase App Hosting
+# Deploying SnappyForms to Firebase App Hosting
 
-VERWOVO is a Next.js 14 (App Router) app backed by PostgreSQL via Prisma. Firebase
+SnappyForms is a Next.js 14 (App Router) app backed by PostgreSQL via Prisma. Firebase
 App Hosting builds the app from your GitHub repo, serves it on Cloud Run, and resolves
 secrets from Google Cloud Secret Manager. Configuration lives in
 [`apphosting.yaml`](apphosting.yaml).

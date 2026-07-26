@@ -15,7 +15,7 @@ export default function LandingPage() {
             Your time. Verified and ready when you need it.
           </h1>
           <p className="mt-4 text-base text-muted-foreground">
-            VERWOVO helps you confirm work, volunteer, education, and training activities and keep
+            SnappyForms helps you confirm work, volunteer, education, and training activities and keep
             trusted records ready to download or share.
           </p>
 
@@ -54,7 +54,7 @@ export default function LandingPage() {
             <Link href="/login">Explore the Demo</Link>
           </Button>
           <p className="mt-2 text-center text-xs text-muted-foreground">
-            VERWOVO does not determine benefit eligibility and never transmits real records to any
+            SnappyForms does not determine benefit eligibility and never transmits real records to any
             government agency.
           </p>
         </div>

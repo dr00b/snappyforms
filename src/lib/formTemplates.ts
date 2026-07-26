@@ -21,7 +21,7 @@ export type FormTemplate = {
 };
 
 const GENERIC_CERTIFICATION =
-  "This summary reflects records confirmed by the listed organization through VERWOVO.";
+  "This summary reflects records confirmed by the listed organization through SnappyForms.";
 
 export const FORM_TEMPLATES: Record<FormTemplateKey, FormTemplate> = {
   PA_1938: {

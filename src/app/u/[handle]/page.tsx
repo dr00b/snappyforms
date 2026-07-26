@@ -66,7 +66,7 @@ export default async function ParticipantProfilePage({ params }: { params: { han
           </CardDescription>
         </CardHeader>
         <CardContent className="text-xs text-muted-foreground">
-          VERWOVO never displays case numbers, benefit status, contact details, or full activity
+          SnappyForms never displays case numbers, benefit status, contact details, or full activity
           history on a public profile.
         </CardContent>
       </Card>

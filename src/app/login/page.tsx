@@ -9,7 +9,7 @@ export default function LoginPage() {
         <Link href="/" className="text-sm text-muted-foreground">
           ← Back
         </Link>
-        <h1 className="mt-4 text-2xl font-bold">Sign in to VERWOVO</h1>
+        <h1 className="mt-4 text-2xl font-bold">Sign in to SnappyForms</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Enter your email or mobile number and we&apos;ll send a 6-digit code. No password needed.
         </p>

@@ -91,8 +91,8 @@ export default function ApiConsolePage() {
             </p>
             <pre className="overflow-x-auto rounded-md bg-muted p-3 text-xs">
 {`curl -X POST http://localhost:3000/api/agency-api/v1/cases/<caseId>/verification \\
-  -H "x-verwovo-client-id: ${client.clientId}" \\
-  -H "x-verwovo-client-secret: <secret>"`}
+  -H "x-snappyforms-client-id: ${client.clientId}" \\
+  -H "x-snappyforms-client-secret: <secret>"`}
             </pre>
             <a
               className="text-xs text-primary underline"

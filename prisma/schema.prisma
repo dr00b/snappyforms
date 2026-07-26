@@ -1,4 +1,4 @@
-// VERWOVO — Phase 1 schema.
+// SnappyForms — Phase 1 schema.
 // Deliberately excludes later-phase entities (ActivityRecord, Consent, FormTemplate,
 // BenefitProgram, APIClient, AuditLog, etc.) — see ROADMAP.md at the repo root.
 //

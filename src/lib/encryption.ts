@@ -2,12 +2,12 @@ import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from "node:
 
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 12;
-const KEY_SALT = "verwovo-case-data-v1";
+const KEY_SALT = "snappyforms-case-data-v1";
 
 // Dev-only fallback so a fresh clone can still run `npm run db:seed` without
 // extra setup. Never rely on this outside a local sandbox — set
 // CASE_DATA_ENCRYPTION_KEY in any real environment.
-const DEV_FALLBACK_SECRET = "verwovo-dev-only-case-data-key-do-not-use-in-prod";
+const DEV_FALLBACK_SECRET = "snappyforms-dev-only-case-data-key-do-not-use-in-prod";
 
 function getKey(): Buffer {
   const secret = process.env.CASE_DATA_ENCRYPTION_KEY;

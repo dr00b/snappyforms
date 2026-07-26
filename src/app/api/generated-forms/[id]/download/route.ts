@@ -16,7 +16,7 @@ export async function GET(_request: Request, { params }: { params: { id: string 
   return new NextResponse(new Uint8Array(form.pdfBytes), {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="verwovo-${form.templateKey.toLowerCase()}-${form.id}.pdf"`,
+      "Content-Disposition": `attachment; filename="snappyforms-${form.templateKey.toLowerCase()}-${form.id}.pdf"`,
     },
   });
 }

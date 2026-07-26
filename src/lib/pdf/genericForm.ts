@@ -20,7 +20,7 @@ export async function renderGenericForm(opts: {
   const template = getFormTemplate(opts.templateKey);
   const writer = await PdfWriter.create();
 
-  writer.title(template?.name ?? "VERWOVO activity summary");
+  writer.title(template?.name ?? "SnappyForms activity summary");
   writer.text(`Generated ${new Date().toLocaleDateString()}`, { size: 9, gray: true });
   writer.spacer(10);
 

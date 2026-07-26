@@ -1,6 +1,6 @@
-# VERWOVO (Phase 1 + 2 + 3 + 4 + 5 prototype)
+# SnappyForms (Phase 1 + 2 + 3 + 4 + 5 prototype)
 
-VERWOVO — **ver**ify **w**ork and volunteer activity — is a hackathon-sprint demonstration of a
+SnappyForms — **ver**ify **w**ork and volunteer activity — is a hackathon-sprint demonstration of a
 Venmo-simple way for people to build portable, trusted records of work, volunteer, education, and
 training activity, and for organizations to verify them.
 
@@ -62,8 +62,8 @@ unratified first approval already on the books) and `taylor@keystone-services-de
 `secret: demo-agency-secret-123`. Try it directly:
 ```bash
 curl -X POST http://localhost:3000/api/agency-api/v1/cases/<caseId>/verification \
-  -H "x-verwovo-client-id: demo-dcao-eligibility-system" \
-  -H "x-verwovo-client-secret: demo-agency-secret-123"
+  -H "x-snappyforms-client-id: demo-dcao-eligibility-system" \
+  -H "x-snappyforms-client-secret: demo-agency-secret-123"
 ```
 (Find a real `<caseId>` from the seed script's console output, or from `/agency/[id]/cases` once
 signed in as the DCAO Admin.)
@@ -94,7 +94,7 @@ at **`/dev/inbox`** — open it in a second tab while testing the code/magic-lin
    **Audit log** tab.
 9. **Generate a document**: as Maya, `/forms` → Generic Monthly Volunteer Summary → choose her
    confirmed volunteer records → Generate → download the PDF (note the required "Draft prepared by
-   VERWOVO" notice).
+   SnappyForms" notice).
 10. **Share & verify**: from `/activity/[id]` on a confirmed record, from `/forms` → My documents,
     or from `/qr`'s **Form Request** tab, tap Share → pick an expiration → confirm → open the
     resulting `/share/[token]` link in a private/incognito tab to see the public safe view with no

@@ -1,4 +1,4 @@
-# Self-contained VERWOVO environment: Postgres + app + Playwright browser tests,
+# Self-contained SnappyForms environment: Postgres + app + Playwright browser tests,
 # all in containers. Nothing is installed on the host and this never touches the
 # remote Neon database. Run it with:
 #
@@ -15,11 +15,11 @@ services:
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: verwovo
-      POSTGRES_PASSWORD: verwovo
-      POSTGRES_DB: verwovo
+      POSTGRES_USER: snappyforms
+      POSTGRES_PASSWORD: snappyforms
+      POSTGRES_DB: snappyforms
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U verwovo -d verwovo"]
+      test: ["CMD-SHELL", "pg_isready -U snappyforms -d snappyforms"]
       interval: 3s
       timeout: 3s
       retries: 20
@@ -31,7 +31,7 @@ services:
       context: .
       dockerfile: docker/Dockerfile.app
     environment:
-      DATABASE_URL: postgresql://verwovo:verwovo@db:5432/verwovo?schema=public
+      DATABASE_URL: postgresql://snappyforms:snappyforms@db:5432/snappyforms?schema=public
       SESSION_SECRET: c66052eed1f506e0abf2999babf5138a233eed0a3e99c335d71d280c0564eba3
       CASE_DATA_ENCRYPTION_KEY: 050c6f79864334c1bf7f6fb520489a89ac39f5a991956801bd21a12756ba5cb6
       DEMO_MODE: "true"

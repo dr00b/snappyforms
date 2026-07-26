@@ -42,7 +42,7 @@ export async function renderPa1938Form(input: Pa1938Input, ssnLast4?: string) {
 
   writer.title("PA 1938 — Community Service / Volunteer Verification");
   writer.text(
-    "This is a VERWOVO-generated demonstration document. It is not an official Commonwealth of Pennsylvania form.",
+    "This is a SnappyForms-generated demonstration document. It is not an official Commonwealth of Pennsylvania form.",
     { size: 8, gray: true }
   );
   writer.spacer(10);

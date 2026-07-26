@@ -119,9 +119,9 @@ export class PdfWriter {
 
 export function drawVerwovoNotice(writer: PdfWriter) {
   writer.spacer(6);
-  writer.text("Draft prepared by VERWOVO. Review all information before submission.", { size: 9, bold: true });
+  writer.text("Draft prepared by SnappyForms. Review all information before submission.", { size: 9, bold: true });
   writer.text(
-    "VERWOVO helps prepare documentation using the information provided. The receiving agency determines whether a record or form meets its requirements.",
+    "SnappyForms helps prepare documentation using the information provided. The receiving agency determines whether a record or form meets its requirements.",
     { size: 8, gray: true }
   );
 }

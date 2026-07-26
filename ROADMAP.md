@@ -1,4 +1,4 @@
-# VERWOVO roadmap
+# SnappyForms roadmap
 
 This build implements all five phases of the product spec's build sequence: **Phase 1 — Core
 demonstration**, **Phase 2 — Verification**, **Phase 3 — Documentation**, **Phase 4 — Organization
@@ -123,7 +123,7 @@ scans redirect to the org profile instead).
   dropped), and an ADMIN-only **API console** showing the seeded client's `clientId`/scopes (never
   the secret) plus a live request log.
 - **Simulated external API**: `POST /api/agency-api/v1/cases/[caseId]/verification`, authenticated
-  by client-credential headers (`x-verwovo-client-id`/`x-verwovo-client-secret`, bcrypt-compared),
+  by client-credential headers (`x-snappyforms-client-id`/`x-snappyforms-client-secret`, bcrypt-compared),
   scope-checked against a `scopes` column on `APIClient` (a plain string column, not a separate
   `APIScope` table — the same static-config simplification as `FormTemplate`), consent-checked via
   `getCaseHoursView`, and rate-limited via the existing `checkRateLimit`. Every branch — including

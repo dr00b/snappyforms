@@ -1,6 +1,6 @@
 # Security notes (prototype)
 
-VERWOVO is a hackathon-sprint prototype. It is **not** hardened for production or for handling
+SnappyForms is a hackathon-sprint prototype. It is **not** hardened for production or for handling
 real personal data. Do not put real names, SSNs, case numbers, or other real personal information
 into this instance.
 
@@ -21,7 +21,7 @@ into this instance.
   Only a masked last-4 fragment is ever shown by default; the full value is decrypted only inside
   one ADMIN-only, rate-limited, audit-logged "reveal case number" action.
 - The simulated agency API (`/api/agency-api/v1/...`) uses client-credential auth
-  (`x-verwovo-client-id` / `x-verwovo-client-secret`, secret bcrypt-compared, never stored in
+  (`x-snappyforms-client-id` / `x-snappyforms-client-secret`, secret bcrypt-compared, never stored in
   plaintext), enforces per-client scopes, is rate-limited, and requires an active participant
   `Consent` row before returning any hours data — every call, success or failure, is logged to
   `APIRequest`.

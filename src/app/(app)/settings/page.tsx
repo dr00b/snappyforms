@@ -48,7 +48,7 @@ export default async function SettingsPage() {
       <LogoutButton />
 
       <p className="text-center text-xs text-muted-foreground">
-        VERWOVO is a demonstration prototype. It is not affiliated with the Pennsylvania Department
+        SnappyForms is a demonstration prototype. It is not affiliated with the Pennsylvania Department
         of Human Services and does not transmit real records to any government agency.
       </p>
     </div>

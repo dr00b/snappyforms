@@ -30,9 +30,9 @@ export async function GET(_request: Request, { params }: { params: { id: string 
   const ics = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//VERWOVO//Opportunity//EN",
+    "PRODID:-//SnappyForms//Opportunity//EN",
     "BEGIN:VEVENT",
-    `UID:${opportunity.id}@verwovo.demo`,
+    `UID:${opportunity.id}@snappyforms.demo`,
     `DTSTAMP:${toIcsDate(new Date(), null)}`,
     `DTSTART:${start}`,
     `DTEND:${end}`,

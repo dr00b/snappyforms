@@ -131,7 +131,7 @@ export default function QrHubPage() {
     if (!qrImage) return;
     const a = document.createElement("a");
     a.href = qrImage.dataUrl;
-    a.download = "verwovo-qr.png";
+    a.download = "snappyforms-qr.png";
     a.click();
   }
 
@@ -139,7 +139,7 @@ export default function QrHubPage() {
     if (!qrImage) return;
     if (navigator.share) {
       try {
-        await navigator.share({ title: "My VERWOVO QR code", url: qrImage.targetUrl });
+        await navigator.share({ title: "My SnappyForms QR code", url: qrImage.targetUrl });
         return;
       } catch {
         // fall through to clipboard

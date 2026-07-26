@@ -12,8 +12,8 @@ const REQUIRED_SCOPE = "cases:verification:read";
 export async function POST(request: Request, { params }: { params: { caseId: string } }) {
   try {
     const endpoint = `/api/agency-api/v1/cases/${params.caseId}/verification`;
-    const clientIdHeader = request.headers.get("x-verwovo-client-id");
-    const clientSecretHeader = request.headers.get("x-verwovo-client-secret");
+    const clientIdHeader = request.headers.get("x-snappyforms-client-id");
+    const clientSecretHeader = request.headers.get("x-snappyforms-client-secret");
 
     const limit = checkRateLimit(`agency-api:${clientIdHeader ?? "anon"}`, 60 * 1000, 30);
     if (!limit.allowed) {

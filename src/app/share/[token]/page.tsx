@@ -25,7 +25,7 @@ export default async function SharePage({ params }: { params: { token: string } 
   return (
     <div className="flex flex-1 flex-col gap-6 px-6 py-10">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Shared via VERWOVO</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Shared via SnappyForms</p>
         {resolved.label && <h1 className="mt-1 text-xl font-bold">{resolved.label}</h1>}
       </div>
 
@@ -74,7 +74,7 @@ export default async function SharePage({ params }: { params: { token: string } 
       )}
 
       <p className="text-xs text-muted-foreground">
-        Expires {new Date(resolved.expiresAt).toLocaleString()}. VERWOVO is a demonstration
+        Expires {new Date(resolved.expiresAt).toLocaleString()}. SnappyForms is a demonstration
         prototype and never shares case numbers, contact details, or full activity history through
         links like this.
       </p>
@@ -103,7 +103,7 @@ function StatusCard({ icon, title, body }: { icon: React.ReactNode; title: strin
         <CardContent className="text-sm text-muted-foreground">{body}</CardContent>
       </Card>
       <Link href="/" className="text-center text-xs text-muted-foreground underline">
-        Learn more about VERWOVO
+        Learn more about SnappyForms
       </Link>
     </div>
   );

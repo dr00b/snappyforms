@@ -49,7 +49,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
       return NextResponse.json({ error: "domain_already_claimed" }, { status: 409 });
     }
 
-    const verificationToken = `verwovo-verify=${randomBytes(12).toString("hex")}`;
+    const verificationToken = `snappyforms-verify=${randomBytes(12).toString("hex")}`;
 
     const domain = await db.organizationDomain.create({
       data: {

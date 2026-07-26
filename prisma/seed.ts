@@ -105,7 +105,7 @@ function daysFromNow(n: number) {
 }
 
 async function main() {
-  console.log("Seeding VERWOVO demo data...");
+  console.log("Seeding SnappyForms demo data...");
 
   // Participant: Maya Johnson
   const maya = await createParticipant("maya.johnson@example-demo.org", "Maya Johnson", "maya-j");
@@ -272,7 +272,7 @@ async function main() {
       organizationId: northside.id,
       domain: "northside-center-demo.org",
       status: "VERIFIED",
-      verificationToken: "verwovo-verify=seeded-northside-token",
+      verificationToken: "snappyforms-verify=seeded-northside-token",
       allowAutoJoin: true,
       verifiedAt: daysAgo(20),
     },
@@ -320,7 +320,7 @@ async function main() {
       organizationId: keystone.id,
       domain: "keystone-services-demo.com",
       status: "VERIFIED",
-      verificationToken: "verwovo-verify=seeded-keystone-token",
+      verificationToken: "snappyforms-verify=seeded-keystone-token",
       allowAutoJoin: false,
       verifiedAt: daysAgo(15),
     },

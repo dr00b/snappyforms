@@ -15,8 +15,8 @@ export default async function OnboardingPage() {
   return (
     <div className="flex flex-1 flex-col gap-6 px-6 py-10">
       <div>
-        <h1 className="text-2xl font-bold">Welcome to VERWOVO</h1>
-        <p className="mt-1 text-sm text-muted-foreground">How will you be using VERWOVO?</p>
+        <h1 className="text-2xl font-bold">Welcome to SnappyForms</h1>
+        <p className="mt-1 text-sm text-muted-foreground">How will you be using SnappyForms?</p>
       </div>
 
       <Link href="/onboarding/participant">

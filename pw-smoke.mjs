@@ -1,4 +1,4 @@
-// VERWOVO browser smoke test (Playwright + real Chromium). Designed to run in the
+// SnappyForms browser smoke test (Playwright + real Chromium). Designed to run in the
 // official Playwright container (see docker/Dockerfile.pw), which carries every
 // browser system library — so nothing needs installing on the host.
 //

@@ -1,4 +1,4 @@
-// VERWOVO smoke test — verifies the app runs end-to-end against the remote
+// SnappyForms smoke test — verifies the app runs end-to-end against the remote
 // Postgres DB. Browserless (uses Node's fetch) so it runs in CI/WSL without
 // browser system libraries. Assumes the app is serving at BASE_URL (default
 // :3000) with DEMO_MODE=true and a seeded DB (npm run db:seed).
