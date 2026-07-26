@@ -115,7 +115,7 @@ export const suspendMemberSchema = z.object({
 // --- Phase 3: Documentation -----------------------------------------------
 
 export const generateFormSchema = z.object({
-  templateKey: z.enum(["MONTHLY_SUMMARY", "WORK_VERIFICATION", "EDUCATION_VERIFICATION"]),
+  templateKey: z.enum(["MONTHLY_SUMMARY", "WORK_VERIFICATION", "EDUCATION_VERIFICATION", "PA_1895"]),
   activityRecordIds: z.array(z.string().min(1)).min(1).max(50),
 });
 
@@ -229,6 +229,25 @@ export const createOpportunitySchema = z.object({
   backgroundCheckRequired: z.boolean().optional().default(false),
   trainingRequired: z.boolean().optional().default(false),
   remoteOrInPerson: z.enum(["IN_PERSON", "REMOTE"]).default("IN_PERSON"),
+});
+
+// A hosted shift is a VolunteerOpportunity narrowed to what a PA 1895 row
+// needs: a category the form recognises, an on-site contact, and real begin/end
+// times (the hours on every record minted from its QR come from these).
+export const hostShiftSchema = z.object({
+  title: nonEmpty(120),
+  description: z.string().trim().max(2000).optional(),
+  date: z.string().trim().min(1),
+  startTime: z.string().trim().regex(/^\d{1,2}:\d{2}$/, "Use HH:MM"),
+  endTime: z.string().trim().regex(/^\d{1,2}:\d{2}$/, "Use HH:MM"),
+  taskCategory: z.enum(["VOLUNTEER", "COMMUNITY_SERVICE"]).default("COMMUNITY_SERVICE"),
+  contactPerson: nonEmpty(120),
+  contactPhone: z.string().trim().max(30).optional(),
+  remoteOrInPerson: z.enum(["IN_PERSON", "REMOTE"]).default("IN_PERSON"),
+});
+
+export const shiftScanConfirmSchema = z.object({
+  code: z.string().trim().regex(/^\d{8}$/),
 });
 
 // --- Phase 5: Future integration demonstration ------------------------------

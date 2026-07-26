@@ -3,6 +3,7 @@
 
 export type FormTemplateKey =
   | "PA_1938"
+  | "PA_1895"
   | "MONTHLY_SUMMARY"
   | "WORK_VERIFICATION"
   | "EDUCATION_VERIFICATION";
@@ -37,6 +38,22 @@ export const FORM_TEMPLATES: Record<FormTemplateKey, FormTemplate> = {
     renewalPeriodDays: 30,
     supportingDocuments: ["A confirmed volunteer or community-service activity record"],
     isGuidedWizard: true,
+  },
+  PA_1895: {
+    key: "PA_1895",
+    name: "PA 1895 Employment and Training Weekly Activity Verification",
+    description:
+      "Fills the official PA 1895 form for one Sunday–Saturday week, one row per confirmed shift.",
+    sourceCategories: ["VOLUNTEER", "COMMUNITY_SERVICE"],
+    certificationLanguage:
+      "Each row on this form corresponds to an activity record the listed organization confirmed at the shift, by displaying a rotating code the participant scanned in person.",
+    // The organization already signed each row at the shift, so there is no
+    // second certification round trip — that is the point of the QR flow.
+    requiresParticipantApproval: false,
+    requiresOrganizationConfirmation: true,
+    renewalPeriodDays: 7,
+    supportingDocuments: ["Confirmed volunteer or community-service records from a single week"],
+    isGuidedWizard: false,
   },
   MONTHLY_SUMMARY: {
     key: "MONTHLY_SUMMARY",

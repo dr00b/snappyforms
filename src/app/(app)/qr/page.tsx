@@ -100,6 +100,19 @@ export default function QrHubPage() {
 
   async function resolveScan(text: string) {
     setScanError(null);
+
+    // A hosted shift's QR is a full URL carrying a rotating code, not an
+    // opaque id — hand the whole thing to the check-in page, code included.
+    try {
+      const url = new URL(text);
+      if (url.pathname.startsWith("/shift/")) {
+        router.push(`${url.pathname}${url.search}`);
+        return;
+      }
+    } catch {
+      // Not a URL; fall through to the opaque-id lookup below.
+    }
+
     const opaqueId = text.split("/").filter(Boolean).pop() ?? text;
     const res = await fetch(`/api/qr/${opaqueId}`);
     if (!res.ok) {
