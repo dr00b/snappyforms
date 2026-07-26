@@ -84,5 +84,22 @@ services:
       webapp:
         condition: service_healthy
 
+  # The low-touch story: an org hosts a shift with a rotating QR and volunteers
+  # scanning it get signed off on the spot. Run explicitly, e.g.
+  #   docker compose up --build --exit-code-from shift-story shift-story
+  shift-story:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.pw
+    command: ["node", "e2e/shift-qr-story.mjs"]
+    environment:
+      BASE_URL: http://webapp:3000
+      SHOT_DIR: /tests/screenshots
+    volumes:
+      - ./e2e/screenshots:/tests/screenshots
+    depends_on:
+      webapp:
+        condition: service_healthy
+
 volumes:
   pgdata:

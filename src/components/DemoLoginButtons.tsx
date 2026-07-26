@@ -41,14 +41,14 @@ export function DemoLoginButtons() {
 
   // Mints a brand-new throwaway identity so many attendees can each drive their
   // own participant/authorizer at the same time (see /api/auth/demo-join).
-  async function join(role: "participant" | "authorizer") {
-    setLoading(`join-${role}`);
+  async function join(role: "participant" | "authorizer", flow?: "host-shift") {
+    setLoading(`join-${flow ?? role}`);
     setError(null);
     try {
       const res = await fetch("/api/auth/demo-join", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role }),
+        body: JSON.stringify({ role, flow }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -92,6 +92,21 @@ export function DemoLoginButtons() {
           <span className="flex flex-col items-start">
             <span>{loading === "join-authorizer" ? "Starting..." : "Join as an authorizer"}</span>
             <span className="text-xs font-normal opacity-80">Approve shifts in the queue</span>
+          </span>
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          className="justify-start"
+          disabled={loading !== null}
+          data-testid="join-host-shift"
+          onClick={() => join("authorizer", "host-shift")}
+        >
+          <span className="flex flex-col items-start">
+            <span>{loading === "join-host-shift" ? "Starting..." : "Host a shift"}</span>
+            <span className="text-xs font-normal opacity-80">
+              Show a rotating QR volunteers scan to get signed off
+            </span>
           </span>
         </Button>
         {error && <p className="text-xs text-destructive">{error}</p>}

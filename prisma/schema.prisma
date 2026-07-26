@@ -259,6 +259,8 @@ model ActivityRecord {
   fraudFlags    FraudReviewFlag[]
   notifications Notification[]
 
+  opportunitySignup OpportunitySignup?
+
   @@index([participantProfileId])
   @@index([organizationId])
 }
@@ -502,6 +504,13 @@ model VolunteerOpportunity {
   trainingRequired        Boolean @default(false)
   remoteOrInPerson        String  @default("IN_PERSON")
 
+  // Rotating shift-QR (TOTP) secret, generated lazily the first time a
+  // verifier-eligible member opens the host view. Plaintext by design: it is
+  // not a user credential — its only power is minting short-lived proximity
+  // codes for this one shift. Harden with lib/encryption.ts AES-GCM if this
+  // ever outgrows the demo. Server-only: never serialize to any client.
+  totpSecret String?
+
   createdAt DateTime @default(now())
 
   qrIdentifier QRIdentifier?
@@ -520,6 +529,14 @@ model OpportunitySignup {
   status                String
   signedUpAt            DateTime @default(now())
   checkedInAt           DateTime?
+
+  // Set when a rotating-QR scan minted a signed (auto-confirmed) record: the
+  // record itself, plus the hash of the TOTP code that proved proximity and
+  // the step it matched — the audit trail of the "signature".
+  activityRecordId String? @unique
+  activityRecord   ActivityRecord? @relation(fields: [activityRecordId], references: [id])
+  codeHash    String?
+  matchedStep Int?
 
   @@unique([opportunityId, participantProfileId])
 }
