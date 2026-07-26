@@ -28,8 +28,17 @@ secrets from Google Cloud Secret Manager. Configuration lives in
 
 ## 1. Prepare the production database
 
-Apply the schema to your production database. App Hosting builds and serves but does
-**not** run migrations for you, so do this yourself (once per schema change):
+Migrations run **automatically at build time**, so the first deploy applies the schema
+for you. That is wired up in [`scripts/migrate-on-build.mjs`](scripts/migrate-on-build.mjs),
+which `npm run build` calls before `next build`; it reads `MIGRATE_DATABASE_URL`
+(created in step 2) and fails the build if a migration fails, so a release can never
+reach users ahead of its own schema.
+
+The step is a no-op when `MIGRATE_DATABASE_URL` is absent, which keeps `npm run build`
+offline-safe for the Docker image, CI, and local builds.
+
+To apply the schema by hand instead — a first run against an empty database, or to
+verify before deploying:
 
 ```bash
 # Use the DIRECT (non-pooled) URL for migrations — pooled endpoints don't support DDL well.
@@ -37,9 +46,8 @@ DATABASE_URL="postgresql://<user>:<pass>@<direct-host>/<db>?sslmode=require" \
   npx prisma migrate deploy
 ```
 
-This applies everything in `prisma/migrations/` (currently the single squashed
-`20260724000000_init`). Do **not** seed a real deployment with the demo data —
-`prisma/seed.ts` is for local/demo use only.
+This applies everything in `prisma/migrations/`. Do **not** seed a real deployment with
+the demo data — `prisma/seed.ts` is for local/demo use only.
 
 ---
 
@@ -154,15 +162,22 @@ For any future migration:
 npx prisma migrate dev --name <change>
 git add prisma/migrations && git commit -m "migration: <change>"
 
-# 2. apply to production BEFORE (or as part of) the deploy:
-DATABASE_URL="<prod-direct-url>" npx prisma migrate deploy
-
-# 3. push to trigger the rollout:
+# 2. push — the build applies it before the new code goes live:
 git push origin main
 ```
 
-Applying the migration before the new code rolls out avoids the app briefly running
-against a schema it doesn't expect.
+The build runs `prisma migrate deploy` against `MIGRATE_DATABASE_URL` before
+`next build`, so the schema is always in place before the rollout that needs it, and a
+failed migration fails the build rather than shipping.
+
+Two things this does **not** protect you from, both inherent to migrating forward:
+
+- **A rollback leaves the schema ahead of the code.** Keep migrations additive
+  (add columns/tables; don't drop or rename in the same release as the code change)
+  so the previous version still runs against the new schema.
+- **A migration that builds but never ships.** If the build succeeds and the rollout
+  is then cancelled, the database is already migrated. Additive migrations make that
+  harmless.
 
 ---
 
@@ -170,7 +185,8 @@ against a schema it doesn't expect.
 
 | Variable | Source | Notes |
 |---|---|---|
-| `DATABASE_URL` | Secret | **Pooled** Postgres URL for the app; use the direct URL only for `migrate deploy` |
+| `DATABASE_URL` | Secret | **Pooled** Postgres URL for the running app (RUNTIME only) |
+| `MIGRATE_DATABASE_URL` | Secret (BUILD) | **Direct**, non-pooled URL used only by the build-time `prisma migrate deploy` |
 | `SESSION_SECRET` | Secret | Signs/authenticates session cookies (`openssl rand -hex 32`) |
 | `CASE_DATA_ENCRYPTION_KEY` | Secret | AES-256-GCM key for `ParticipantCase.caseNumberEncrypted` (`openssl rand -hex 32`) |
 | `APP_BASE_URL` | Plain | Public https URL; used for QR/magic-link generation |

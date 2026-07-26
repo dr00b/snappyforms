@@ -7,9 +7,13 @@
 #        firebase apphosting:secrets:set DATABASE_URL
 #        firebase apphosting:secrets:set SESSION_SECRET
 #        firebase apphosting:secrets:set CASE_DATA_ENCRYPTION_KEY
-#   2. Apply migrations to the production database before/at release — App Hosting
-#      builds and serves but does NOT run `prisma migrate deploy`:
-#        DATABASE_URL="<prod-url>" npx prisma migrate deploy
+#   2. Migrations now run automatically at build time (scripts/migrate-on-build.mjs,
+#      wired into `npm run build`). That needs MIGRATE_DATABASE_URL in Secret
+#      Manager, set to Neon's DIRECT (non-pooled) URL:
+#        firebase apphosting:secrets:set MIGRATE_DATABASE_URL
+#      A failed migration fails the build, so a release can never reach users
+#      ahead of its own schema. To go back to applying them by hand, drop the
+#      secret — the build step no-ops when it is absent.
 #   3. For serverless/Neon, point DATABASE_URL at a POOLED connection string so
 #      multiple instances don't exhaust Postgres connections.
 
@@ -32,6 +36,15 @@ env:
     secret: CASE_DATA_ENCRYPTION_KEY
     availability:
       - RUNTIME
+
+  # Direct (non-pooled) URL, used only by the build-time migration step. Kept
+  # separate from DATABASE_URL because that one is pooled for the running app,
+  # and PgBouncer's transaction mode breaks the lock `migrate deploy` takes.
+  # BUILD only — the app itself must never open a direct connection.
+  - variable: MIGRATE_DATABASE_URL
+    secret: MIGRATE_DATABASE_URL
+    availability:
+      - BUILD
 
   # --- Plain config ---
   - variable: APP_BASE_URL
