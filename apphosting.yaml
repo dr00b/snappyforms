@@ -41,14 +41,14 @@ env:
 
   # Demo-only features (seeded login buttons, /dev/inbox). Keep OFF in a real deploy.
   - variable: DEMO_MODE
-    value: "false"
+    value: "true"
     availability:
       - RUNTIME
 
   # NEXT_PUBLIC_* is inlined into the client bundle at build time, so it must be
   # available during BUILD (RUNTIME kept for parity).
   - variable: NEXT_PUBLIC_DEMO_MODE
-    value: "false"
+    value: "true"
     availability:
       - BUILD
       - RUNTIME
