@@ -5,6 +5,7 @@ import { identifierChannel } from "@/lib/auth/users";
 import { createMagicLinkToken } from "@/lib/auth/magicLink";
 import { logNotification } from "@/lib/notifications";
 import { handleApiError } from "@/lib/apiError";
+import { appBaseUrl } from "@/lib/appUrl";
 
 const schema = z.object({ identifier: identifierSchema });
 
@@ -14,8 +15,7 @@ export async function POST(request: Request) {
     const channel = identifierChannel(identifier);
     const { token } = await createMagicLinkToken(identifier);
 
-    const base = process.env.APP_BASE_URL ?? "http://localhost:3000";
-    const link = `${base}/api/auth/magic-link/consume?token=${token}`;
+    const link = `${appBaseUrl()}/api/auth/magic-link/consume?token=${token}`;
 
     await logNotification({
       channel,

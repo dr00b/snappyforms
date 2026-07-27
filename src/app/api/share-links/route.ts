@@ -4,6 +4,7 @@ import { createShareLinkSchema } from "@/lib/validation";
 import { getCurrentSession } from "@/lib/auth/session";
 import { handleApiError } from "@/lib/apiError";
 import { logAudit } from "@/lib/audit";
+import { appBaseUrl } from "@/lib/appUrl";
 
 export async function GET() {
   try {
@@ -82,9 +83,12 @@ export async function POST(request: Request) {
       correlationId: link.id,
     });
 
-    const base = process.env.APP_BASE_URL ?? "http://localhost:3000";
-
-    return NextResponse.json({ ok: true, id: link.id, url: `${base}/share/${link.id}`, expiresAt: link.expiresAt });
+    return NextResponse.json({
+      ok: true,
+      id: link.id,
+      url: `${appBaseUrl()}/share/${link.id}`,
+      expiresAt: link.expiresAt,
+    });
   } catch (error) {
     return handleApiError(error);
   }

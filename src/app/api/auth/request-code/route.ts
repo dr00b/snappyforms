@@ -5,6 +5,7 @@ import { createVerificationCode, CODE_TTL_MS } from "@/lib/auth/otp";
 import { createMagicLinkToken } from "@/lib/auth/magicLink";
 import { logNotification, buildOtpMessage } from "@/lib/notifications";
 import { handleApiError } from "@/lib/apiError";
+import { appBaseUrl } from "@/lib/appUrl";
 
 export async function POST(request: Request) {
   try {
@@ -14,8 +15,7 @@ export async function POST(request: Request) {
 
     if (body.purpose === "MAGIC_LINK") {
       const { token } = await createMagicLinkToken(identifier);
-      const base = process.env.APP_BASE_URL ?? "http://localhost:3000";
-      const link = `${base}/api/auth/magic-link/consume?token=${token}`;
+      const link = `${appBaseUrl()}/api/auth/magic-link/consume?token=${token}`;
       await logNotification({
         channel,
         toIdentifier: identifier,
