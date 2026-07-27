@@ -64,7 +64,9 @@ function GenericGenerator({ templateKey, sourceCategories }: { templateKey: Form
 
   const selectedRecords = records.filter((r) => selected.has(r.id));
   const orgHandles = new Set(selectedRecords.map((r) => r.organizationHandle));
-  const multiOrg = orgHandles.size > 1;
+  // PA 1895 signs each row separately, so a week can span organizations. The
+  // summary forms speak for one organization, so they cannot.
+  const multiOrg = templateKey !== "PA_1895" && orgHandles.size > 1;
 
   async function generate() {
     setLoading(true);

@@ -2,8 +2,8 @@
 // Not a DB table in this prototype — see the Phase 3 plan for why.
 
 export type FormTemplateKey =
-  | "PA_1938"
   | "PA_1895"
+  | "PA_1938"
   | "MONTHLY_SUMMARY"
   | "WORK_VERIFICATION"
   | "EDUCATION_VERIFICATION";
@@ -24,21 +24,9 @@ export type FormTemplate = {
 const GENERIC_CERTIFICATION =
   "This summary reflects records confirmed by the listed organization through SnappyForms.";
 
+// Order matters: this is the order the forms list renders in, and PA 1895 —
+// the form the QR shift flow fills end to end — leads.
 export const FORM_TEMPLATES: Record<FormTemplateKey, FormTemplate> = {
-  PA_1938: {
-    key: "PA_1938",
-    name: "PA 1938 Community Service / Volunteer Verification (demonstration)",
-    description:
-      "A guided demonstration of Pennsylvania's PA 1938 community-service verification form.",
-    sourceCategories: ["VOLUNTEER", "COMMUNITY_SERVICE"],
-    certificationLanguage:
-      "I confirm that I am authorized to provide this information for the organization and that the information entered is accurate to the best of my knowledge.",
-    requiresParticipantApproval: true,
-    requiresOrganizationConfirmation: true,
-    renewalPeriodDays: 30,
-    supportingDocuments: ["A confirmed volunteer or community-service activity record"],
-    isGuidedWizard: true,
-  },
   PA_1895: {
     key: "PA_1895",
     name: "PA 1895 Employment and Training Weekly Activity Verification",
@@ -54,6 +42,20 @@ export const FORM_TEMPLATES: Record<FormTemplateKey, FormTemplate> = {
     renewalPeriodDays: 7,
     supportingDocuments: ["Confirmed volunteer or community-service records from a single week"],
     isGuidedWizard: false,
+  },
+  PA_1938: {
+    key: "PA_1938",
+    name: "PA 1938 Community Service / Volunteer Verification (demonstration)",
+    description:
+      "A guided demonstration of Pennsylvania's PA 1938 community-service verification form.",
+    sourceCategories: ["VOLUNTEER", "COMMUNITY_SERVICE"],
+    certificationLanguage:
+      "I confirm that I am authorized to provide this information for the organization and that the information entered is accurate to the best of my knowledge.",
+    requiresParticipantApproval: true,
+    requiresOrganizationConfirmation: true,
+    renewalPeriodDays: 30,
+    supportingDocuments: ["A confirmed volunteer or community-service activity record"],
+    isGuidedWizard: true,
   },
   MONTHLY_SUMMARY: {
     key: "MONTHLY_SUMMARY",

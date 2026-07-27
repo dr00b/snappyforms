@@ -35,6 +35,7 @@ export async function POST(request: Request) {
       include: {
         confirmations: { orderBy: { createdAt: "desc" }, take: 1 },
         verifierMembership: true,
+        organization: true,
       },
     });
 
@@ -42,18 +43,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "records_not_eligible" }, { status: 400 });
     }
 
+    // PA 1895 carries a contact person and an authorized signature on every row,
+    // so a week spent at two organizations is an ordinary week for that form.
+    // The summary forms speak for one organization as a whole, so they still
+    // require one.
     const organizationIds = new Set(records.map((r) => r.organizationId));
-    if (organizationIds.size !== 1) {
+    if (templateKey !== "PA_1895" && organizationIds.size !== 1) {
       return NextResponse.json({ error: "records_must_share_organization" }, { status: 400 });
     }
     if (records.some((r) => !template.sourceCategories.includes(r.category))) {
       return NextResponse.json({ error: "category_mismatch" }, { status: 400 });
     }
 
-    const organization = await db.organization.findUnique({ where: { id: [...organizationIds][0] } });
-    if (!organization) {
-      return NextResponse.json({ error: "organization_not_found" }, { status: 404 });
-    }
+    // The generated form is filed under one organization even when its rows span
+    // several; the earliest row's organization is the one that owns the record.
+    let organization = records[0].organization;
 
     let pdfBytes: Uint8Array;
     if (templateKey === "PA_1895") {
@@ -71,22 +75,25 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "records_must_share_one_week" }, { status: 400 });
       }
 
+      organization = dated[0].organization;
+      const organizationNames = [...new Set(dated.map((r) => r.organization.name))];
+
       pdfBytes = await renderPa1895Form({
         clientName: session.user.participantProfile.displayName,
         weekEnding: weekEndingSaturday(dates[0]),
         rows: dated.map((r) => ({
           date: r.activityDate as Date,
           typeOfActivity: r.title,
-          contactPersonAndPhone: r.supervisorName ?? organization.name,
-          authorizedSignature: r.verifierMembership?.displayName ?? organization.name,
+          contactPersonAndPhone: r.supervisorName ?? r.organization.name,
+          authorizedSignature: r.verifierMembership?.displayName ?? r.organization.name,
           beginTime: r.startTime ?? "",
           endTime: r.endTime ?? "",
           totalDailyHours: r.totalHours ?? 0,
         })),
         comments:
-          `Verified through SnappyForms: ${organization.name} confirmed each activity below ` +
-          `at the shift, via a rotating code the participant scanned in person. ` +
-          `Record IDs: ${dated.map((r) => r.id).join(", ")}.`,
+          `Verified through SnappyForms: each activity below was confirmed at the shift by ` +
+          `${organizationNames.join(", ")}, via a rotating code the participant scanned in ` +
+          `person. Record IDs: ${dated.map((r) => r.id).join(", ")}.`,
       });
     } else {
       pdfBytes = await renderGenericForm({
