@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { initials } from "@/lib/utils";
 import { QrCode, Search, Clock, Settings, ShieldCheck, ListChecks, Terminal } from "lucide-react";
 import { JoinableOrgsBanner } from "@/components/JoinableOrgsBanner";
+import { YOUR_TURN_STATUSES } from "@/lib/activityLabels";
 
 export default async function DashboardPage() {
   const session = await getCurrentSession();
@@ -23,10 +24,14 @@ export default async function DashboardPage() {
 
   const participantCounts = participantProfile
     ? {
+        // Deliberately "your turn" only, not everything on the Needs action tab:
+        // this is a call-to-action badge, and counting records that are sitting
+        // with the organization would nag the participant about work that is
+        // not theirs to do.
         needsAction: await db.activityRecord.count({
           where: {
             participantProfileId: participantProfile.id,
-            status: { in: ["AWAITING_PARTICIPANT", "CHANGES_REQUESTED"] },
+            status: { in: YOUR_TURN_STATUSES.participant },
           },
         }),
         confirmed: await db.activityRecord.count({

@@ -12,6 +12,8 @@ import {
   CATEGORY_LABELS,
   FORM_CERT_STATUS_LABELS,
   FORM_CERT_STATUS_BADGE_VARIANT,
+  YOUR_TURN_STATUSES,
+  WAITING_ON_OTHERS_STATUSES,
 } from "@/lib/activityLabels";
 
 type Identity =
@@ -62,9 +64,6 @@ type MemberItem = {
   ratifiedAt?: string | null;
   needsRatification?: boolean;
 };
-
-const NEEDS_ACTION_ORG = ["AWAITING_ORGANIZATION"];
-const NEEDS_ACTION_PARTICIPANT = ["AWAITING_PARTICIPANT", "CHANGES_REQUESTED"];
 
 const MEMBER_STATUS_BADGE: Record<string, "default" | "muted" | "warning" | "outline"> = {
   ACTIVE: "default",
@@ -157,13 +156,58 @@ export default function ActivityPage() {
   }
 
   const isOrgView = Boolean(currentIdentity && "orgId" in currentIdentity);
-  const needsActionStatuses = isOrgView ? NEEDS_ACTION_ORG : NEEDS_ACTION_PARTICIPANT;
+  const viewerRole = isOrgView ? "organization" : "participant";
+
+  const yourTurn = useMemo(
+    () => records.filter((r) => YOUR_TURN_STATUSES[viewerRole].includes(r.status)),
+    [records, viewerRole]
+  );
+  const waitingOnOthers = useMemo(
+    () => records.filter((r) => WAITING_ON_OTHERS_STATUSES[viewerRole].includes(r.status)),
+    [records, viewerRole]
+  );
 
   const filtered = useMemo(() => {
-    if (tab === "needs-action") return records.filter((r) => needsActionStatuses.includes(r.status));
     if (tab === "confirmed") return records.filter((r) => r.status === "CONFIRMED");
     return records;
-  }, [records, tab, needsActionStatuses]);
+  }, [records, tab]);
+
+  const waitingHint = isOrgView
+    ? "Sent to the participant — nothing to do until they respond."
+    : "Submitted for approval — the organization has these.";
+
+  function recordCard(r: ActivityListItem) {
+    return (
+      <Link key={r.id} href={`/activity/${r.id}`}>
+        <Card className="transition hover:border-primary">
+          <CardContent className="flex items-center justify-between p-4">
+            <div>
+              <p className="text-sm font-semibold">{r.title}</p>
+              <p className="text-xs text-muted-foreground">
+                {CATEGORY_LABELS[r.category] ?? r.category} · {isOrgView ? r.participantName : r.organizationName}
+              </p>
+              {r.activityDate && (
+                <p className="text-xs text-muted-foreground">
+                  {new Date(r.activityDate).toLocaleDateString()}
+                  {r.totalHours ? ` · ${r.totalHours}h` : ""}
+                </p>
+              )}
+            </div>
+            <div className="flex flex-col items-end gap-1">
+              <Badge variant={STATUS_BADGE_VARIANT[r.status] ?? "outline"}>
+                {STATUS_LABELS[r.status] ?? r.status}
+              </Badge>
+              {r.hasFraudFlags && (
+                <Badge variant="warning" className="text-[10px]">
+                  Needs review
+                </Badge>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </Link>
+    );
+  }
 
   const newHref = isOrgView
     ? `/activity/new-for-participant?orgId=${(currentIdentity as { orgId: string }).orgId}`
@@ -204,42 +248,35 @@ export default function ActivityPage() {
           {isOrgAdmin && <TabsTrigger value="audit">Audit log</TabsTrigger>}
         </TabsList>
 
-        {["needs-action", "confirmed", "all"].map((value) => (
+        <TabsContent value="needs-action" className="flex flex-col gap-6">
+          {loading && <p className="text-sm text-muted-foreground">Loading...</p>}
+          {!loading && yourTurn.length === 0 && waitingOnOthers.length === 0 && (
+            <p className="py-8 text-center text-sm text-muted-foreground">Nothing here yet.</p>
+          )}
+          {!loading && yourTurn.length > 0 && (
+            <section className="flex flex-col gap-3">
+              <h2 className="text-sm font-semibold">Your turn</h2>
+              {yourTurn.map(recordCard)}
+            </section>
+          )}
+          {!loading && waitingOnOthers.length > 0 && (
+            <section className="flex flex-col gap-3">
+              <div>
+                <h2 className="text-sm font-semibold">Waiting on others</h2>
+                <p className="text-xs text-muted-foreground">{waitingHint}</p>
+              </div>
+              {waitingOnOthers.map(recordCard)}
+            </section>
+          )}
+        </TabsContent>
+
+        {["confirmed", "all"].map((value) => (
           <TabsContent key={value} value={value} className="flex flex-col gap-3">
             {loading && <p className="text-sm text-muted-foreground">Loading...</p>}
             {!loading && filtered.length === 0 && (
               <p className="py-8 text-center text-sm text-muted-foreground">Nothing here yet.</p>
             )}
-            {filtered.map((r) => (
-              <Link key={r.id} href={`/activity/${r.id}`}>
-                <Card className="transition hover:border-primary">
-                  <CardContent className="flex items-center justify-between p-4">
-                    <div>
-                      <p className="text-sm font-semibold">{r.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {CATEGORY_LABELS[r.category] ?? r.category} · {isOrgView ? r.participantName : r.organizationName}
-                      </p>
-                      {r.activityDate && (
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(r.activityDate).toLocaleDateString()}
-                          {r.totalHours ? ` · ${r.totalHours}h` : ""}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <Badge variant={STATUS_BADGE_VARIANT[r.status] ?? "outline"}>
-                        {STATUS_LABELS[r.status] ?? r.status}
-                      </Badge>
-                      {r.hasFraudFlags && (
-                        <Badge variant="warning" className="text-[10px]">
-                          Needs review
-                        </Badge>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
+            {filtered.map(recordCard)}
           </TabsContent>
         ))}
 
