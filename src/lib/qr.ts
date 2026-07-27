@@ -1,8 +1,8 @@
 import QRCode from "qrcode";
+import { appBaseUrl } from "@/lib/appUrl";
 
 export function qrTargetUrl(opaqueId: string) {
-  const base = process.env.APP_BASE_URL ?? "http://localhost:3000";
-  return `${base}/q/${opaqueId}`;
+  return `${appBaseUrl()}/q/${opaqueId}`;
 }
 
 /**
@@ -11,8 +11,7 @@ export function qrTargetUrl(opaqueId: string) {
  * survives — that expiry is the whole point.
  */
 export function shiftTargetUrl(opportunityId: string, code: string) {
-  const base = process.env.APP_BASE_URL ?? "http://localhost:3000";
-  return `${base}/shift/${opportunityId}?c=${code}`;
+  return `${appBaseUrl()}/shift/${opportunityId}?c=${encodeURIComponent(code)}`;
 }
 
 export async function generateQrDataUrl(payload: string) {
