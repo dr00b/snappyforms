@@ -147,7 +147,7 @@ export function ActivityFieldsForm({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <label className="text-sm font-medium">Date</label>
           <Input className="mt-1" type="date" value={value.activityDate} onChange={(e) => set("activityDate", e.target.value)} />
@@ -165,7 +165,7 @@ export function ActivityFieldsForm({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <label className="text-sm font-medium">Paid or unpaid</label>
           <select className={`mt-1 ${selectClass}`} value={value.paidStatus} onChange={(e) => set("paidStatus", e.target.value)}>
@@ -188,7 +188,7 @@ export function ActivityFieldsForm({
 
       {showMore && (
         <div className="flex flex-col gap-4 rounded-lg border border-dashed border-border p-4">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label className="text-sm font-medium">Start date</label>
               <Input className="mt-1" type="date" value={value.startDate} onChange={(e) => set("startDate", e.target.value)} />

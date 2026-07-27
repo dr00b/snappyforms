@@ -125,7 +125,7 @@ export default function NewOpportunityPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           <div>
             <label className="text-sm font-medium">Date</label>
             <Input className="mt-1" type="date" value={form.date} onChange={(e) => set("date", e.target.value)} required />

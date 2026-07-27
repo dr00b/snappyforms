@@ -253,7 +253,7 @@ export default function Pa1938WizardPage() {
 
       {step === 3 && (
         <div className="flex flex-col gap-3">
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <Field label="Service start date" type="date" value={service.startDate} onChange={(v) => setService((s) => ({ ...s, startDate: v }))} />
             <Field label="Expected end date" type="date" value={service.endDate} onChange={(v) => setService((s) => ({ ...s, endDate: v }))} />
           </div>
@@ -265,7 +265,7 @@ export default function Pa1938WizardPage() {
             />
             Transportation provided at no cost
           </label>
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             <Field label="Week 1 hrs" type="number" value={service.week1Hours} onChange={(v) => setService((s) => ({ ...s, week1Hours: v }))} />
             <Field label="Week 2 hrs" type="number" value={service.week2Hours} onChange={(v) => setService((s) => ({ ...s, week2Hours: v }))} />
             <Field label="Week 3 hrs" type="number" value={service.week3Hours} onChange={(v) => setService((s) => ({ ...s, week3Hours: v }))} />

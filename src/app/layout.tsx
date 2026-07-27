@@ -9,7 +9,9 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
+  // No maximumScale: pinning it to 1 blocks pinch-zoom, which is both an
+  // accessibility failure and the reason a cramped form had no way out — a
+  // user who could not read an overlapping field could not zoom either.
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
