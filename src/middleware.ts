@@ -36,20 +36,30 @@ function canonicalRedirect(request: NextRequest): NextResponse | null {
   const canonical = canonicalOrigin();
   if (!canonical || canonical.protocol !== "https:") return null;
 
-  // The Host header is the hostname the user actually typed or scanned.
-  const host = request.headers.get("host") ?? request.nextUrl.host;
+  // The hostname the user actually typed or scanned. App Hosting proxies the
+  // request through its edge, which can leave the internal backend hostname in
+  // Host and the real one in X-Forwarded-Host, so that wins when it is present.
+  const host =
+    request.headers.get("x-forwarded-host")?.split(",")[0].trim() ||
+    request.headers.get("host") ||
+    request.nextUrl.host;
   if (!host) return null;
 
   const hostname = host.split(":")[0].toLowerCase();
   if (isLocalHostname(hostname)) return null;
 
-  // TLS terminates at Google's edge, so nextUrl.protocol is http even for
-  // requests the user made over https. x-forwarded-proto is the real one; if
-  // it is missing we are not behind the edge and should not guess.
-  const forwardedProto = request.headers.get("x-forwarded-proto")?.split(",")[0].trim();
-  const isHttps = forwardedProto ? forwardedProto === "https" : request.nextUrl.protocol === "https:";
-
-  if (hostname === canonical.hostname && isHttps) return null;
+  // Only ever redirect across hostnames. Deliberately no protocol check: behind
+  // the edge there is no trustworthy signal for it — TLS terminates upstream so
+  // nextUrl.protocol is always http, and x-forwarded-proto arrives as a
+  // comma-joined list that can read "http,http" on a request the user made over
+  // https (vercel/next.js#52266). Redirecting on that judgement sent the
+  // canonical host to itself forever: every hop looked non-https, so every hop
+  // redirected, and snappyforms.us served nothing but 308s.
+  //
+  // Nothing is lost by dropping it. App Hosting's edge already 301s http->https
+  // before the request reaches this code, and the HSTS header in next.config.js
+  // stops the browser trying plaintext again after the first visit.
+  if (hostname === canonical.hostname) return null;
 
   const target = new URL(request.nextUrl.pathname + request.nextUrl.search, canonical.origin);
   // 308 rather than 301/302: it preserves the method and body, and browsers
