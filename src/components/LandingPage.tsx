@@ -243,17 +243,6 @@ export default function LandingPage() {
       <section className="mx-auto max-w-6xl px-6 pb-20 pt-16 md:pt-24">
         <div className="grid items-center gap-14 md:grid-cols-[1.1fr_0.9fr]">
           <div>
-            <span
-              className="inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-medium uppercase tracking-[0.12em]"
-              style={{
-                borderColor: "hsl(262 55% 55% / 0.35)",
-                color: "hsl(262 55% 40%)",
-                backgroundColor: "hsl(262 55% 55% / 0.08)",
-                fontFamily: "'IBM Plex Mono', monospace",
-              }}
-            >
-              Your time. Verified and ready when you need it.
-            </span>
 
             <h1
               className="mt-5 text-[2.6rem] leading-[1.08] tracking-tight md:text-[3.4rem]"
