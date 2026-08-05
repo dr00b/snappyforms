@@ -4,6 +4,7 @@ import { searchQuerySchema } from "@/lib/validation";
 import { handleApiError } from "@/lib/apiError";
 import { getCurrentSession } from "@/lib/auth/session";
 import { logAudit } from "@/lib/audit";
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   try {

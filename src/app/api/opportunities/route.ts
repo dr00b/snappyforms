@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { handleApiError } from "@/lib/apiError";
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   try {

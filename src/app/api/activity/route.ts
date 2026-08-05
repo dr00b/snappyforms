@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { getCurrentSession } from "@/lib/auth/session";
 import { handleApiError } from "@/lib/apiError";
 import { getVerifierEligibleMembership } from "@/lib/activity";
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   try {

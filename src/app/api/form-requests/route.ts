@@ -6,6 +6,7 @@ import { handleApiError } from "@/lib/apiError";
 import { logAudit } from "@/lib/audit";
 import { notifyUser } from "@/lib/notify";
 import { getVerifierEligibleMembership } from "@/lib/activity";
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   try {
