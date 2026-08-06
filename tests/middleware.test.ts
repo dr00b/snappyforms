@@ -11,7 +11,7 @@ import { SESSION_COOKIE } from "../src/lib/constants";
 import { middleware } from "../src/middleware";
 
 const HOSTED = "https://snappyforms--snappy-forms.us-east4.hosted.app";
-const CANON = "https://snappyforms.us";
+const CANON = "https://snappyforms.org";
 
 function call(url: string, { proto, cookie }: { proto?: string; cookie?: boolean } = {}) {
   const headers = new Headers();
