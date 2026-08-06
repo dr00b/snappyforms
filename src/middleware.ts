@@ -54,7 +54,7 @@ function canonicalRedirect(request: NextRequest): NextResponse | null {
   // comma-joined list that can read "http,http" on a request the user made over
   // https (vercel/next.js#52266). Redirecting on that judgement sent the
   // canonical host to itself forever: every hop looked non-https, so every hop
-  // redirected, and snappyforms.us served nothing but 308s.
+  // redirected, and snappyforms.org served nothing but 308s.
   //
   // Nothing is lost by dropping it. App Hosting's edge already 301s http->https
   // before the request reaches this code, and the HSTS header in next.config.js

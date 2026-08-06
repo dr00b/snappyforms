@@ -17,7 +17,7 @@ const nextConfig = {
             // closes that window after the first visit.
             //
             // Deliberately no includeSubDomains: it would also bind subdomains
-            // that do not exist yet (demo.snappyforms.us is planned in #7), and
+            // that do not exist yet (demo.snappyforms.org is planned in #7), and
             // a domain that has never been served can be hard to un-pin.
             key: "Strict-Transport-Security",
             value: "max-age=31536000",
