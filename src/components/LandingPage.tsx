@@ -248,16 +248,14 @@ export default function LandingPage() {
               className="mt-5 text-[2.6rem] leading-[1.08] tracking-tight md:text-[3.4rem]"
               style={{ fontFamily: "'Fraunces', serif", fontWeight: 500 }}
             >
-              The work you showed up for,
+              Work Requirement Tracking & Verification
               <br />
-              turned into a record{" "}
-              <span style={{ color: "hsl(164 60% 32%)" }}>you own</span>.
+              <span style={{ color: "hsl(164 60% 32%)" }}>Simplified</span>.
             </h1>
 
-            <p className="mt-6 max-w-xl text-[17px] leading-relaxed" style={{ color: "hsl(220 10% 45%)" }}>
-              SnappyForms lets people build a portable, verified history of work,
-              volunteering, and training — confirmed by the organizations that were
-              actually there, and shareable with anyone who needs proof.
+            <p className="mt-6 max-w-xl text-[17px] leading-relaxed" style={{ color: "hsl(220, 7%, 35%)" }}>
+              Portable, verified documentation of work, volunteering, and training for <br /><span style={{ color: "hsl(164 60% 32%)" }}>Beneficiaries</span>. <br /><br />
+              Simplified volunteer acquisition and management for <br /><span style={{ color: "hsl(164 60% 32%)" }}>Organizations</span>.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-4">
@@ -298,8 +296,7 @@ export default function LandingPage() {
               Three steps, no paperwork chase
             </h2>
             <p className="mt-3 text-[15px]" style={{ color: "hsl(220 10% 45%)" }}>
-              Every record follows the same path, whether it's a shift, a training
-              hour, or a season of volunteering.
+              Every record follows the same path, whether it's work, training,  <br />or volunteering.
             </p>
           </div>
 
@@ -339,12 +336,11 @@ export default function LandingPage() {
               For individuals
             </span>
             <h3 className="mt-3 text-2xl" style={{ fontFamily: "'Fraunces', serif", fontWeight: 500 }}>
-              One handle. Every record.
+              Participate. Verify. Share
             </h3>
             <p className="mt-3 text-[15px] leading-relaxed" style={{ color: "hsl(220 10% 45%)" }}>
               Pick a handle, scan a QR code to connect with an organization, and
-              request verification for the work you've done. Your dashboard holds
-              every confirmed record — plus anything still awaiting a response.
+              request verification for the work you've done. Every record saved and ready to export for sharing.
             </p>
           </div>
 
@@ -359,12 +355,10 @@ export default function LandingPage() {
               For organizations
             </span>
             <h3 className="mt-3 text-2xl" style={{ fontFamily: "'Fraunces', serif", fontWeight: 500 }}>
-              Verify without the spreadsheet.
+              Gather & Manage Volunteers in One Place.
             </h3>
             <p className="mt-3 text-[15px] leading-relaxed" style={{ color: "hsl(220 10% 45%)" }}>
-              Claim your domain, add locations and volunteer opportunities, and let
-              trusted members confirm records directly — with a ratification step so
-              admins stay in control of who can verify on the organization's behalf.
+              Post opportunities, simplify check-in with a QR code, and digitally certify volunteers' hours. Expand your volunteer network without expanding administrative friction.
             </p>
           </div>
         </div>
