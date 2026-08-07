@@ -4,6 +4,7 @@ import { getCurrentSession } from "@/lib/auth/session";
 import { handleApiError } from "@/lib/apiError";
 import { verifyCode } from "@/lib/shiftTotp";
 import { serializeShiftForVolunteer } from "@/lib/shifts";
+export const dynamic = "force-dynamic";
 
 /**
  * What a volunteer sees after scanning, before they confirm. The code is

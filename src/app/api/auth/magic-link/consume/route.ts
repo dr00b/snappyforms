@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { consumeMagicLinkToken } from "@/lib/auth/magicLink";
 import { findOrCreateUserByIdentifier, needsOnboarding } from "@/lib/auth/users";
 import { createSession, setSessionCookie } from "@/lib/auth/session";
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
