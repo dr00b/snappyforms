@@ -3,10 +3,12 @@
 SnappyForms is a Next.js 14 (App Router) app backed by PostgreSQL via Prisma. Firebase
 App Hosting builds the app from your GitHub repo, serves it on Cloud Run, and resolves
 secrets from Google Cloud Secret Manager. Configuration lives in
-[`apphosting.yaml`](apphosting.yaml).
+[`frontend/apphosting.yaml`](frontend/apphosting.yaml).
 
-> **Root directory:** `/` (the repo root). This is not a monorepo — `package.json`,
-> `next.config.js`, `src/`, and `prisma/` are all at the root.
+> **Root directory:** `/frontend`. This is a monorepo — the Next.js app lives in
+> `frontend/` (`package.json`, `next.config.js`, `src/`, `prisma/` are all under
+> `frontend/`), and the Django backend lives in `backend/`. Run every command in
+> this guide from the `frontend/` directory unless stated otherwise.
 
 ---
 
@@ -29,7 +31,7 @@ secrets from Google Cloud Secret Manager. Configuration lives in
 ## 1. Prepare the production database
 
 Migrations run **automatically at build time**, so the first deploy applies the schema
-for you. That is wired up in [`scripts/migrate-on-build.mjs`](scripts/migrate-on-build.mjs),
+for you. That is wired up in [`frontend/scripts/migrate-on-build.mjs`](frontend/scripts/migrate-on-build.mjs),
 which `npm run build` calls before `next build`; it reads `MIGRATE_DATABASE_URL`
 (created in step 2) and fails the build if a migration fails, so a release can never
 reach users ahead of its own schema.
@@ -82,7 +84,7 @@ backend before the secrets, re-grant access afterwards with
 
 ## 3. Set your app domain
 
-Edit [`apphosting.yaml`](apphosting.yaml) and replace the placeholder:
+Edit [`frontend/apphosting.yaml`](frontend/apphosting.yaml) and replace the placeholder:
 
 ```yaml
   - variable: APP_BASE_URL
@@ -108,7 +110,9 @@ picking the repo, the **live branch** (e.g. `main`), and a region:
 firebase apphosting:backends:create --project <YOUR_PROJECT_ID>
 ```
 
-When prompted for the repository root, accept the default (`/`).
+When prompted for the repository root, set it to `/frontend` (not the default `/`).
+For an existing backend, change the root directory to `/frontend` in the Firebase
+console (App Hosting → your backend → settings) before the next rollout.
 
 ---
 
@@ -160,7 +164,7 @@ For any future migration:
 ```bash
 # 1. locally, against a dev DB:
 npx prisma migrate dev --name <change>
-git add prisma/migrations && git commit -m "migration: <change>"
+git add frontend/prisma/migrations && git commit -m "migration: <change>"
 
 # 2. push — the build applies it before the new code goes live:
 git push origin main

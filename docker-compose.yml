@@ -28,7 +28,7 @@ services:
 
   webapp:
     build:
-      context: .
+      context: ./frontend
       dockerfile: docker/Dockerfile.app
     environment:
       DATABASE_URL: postgresql://snappyforms:snappyforms@db:5432/snappyforms?schema=public
@@ -58,7 +58,7 @@ services:
 
   pw-tests:
     build:
-      context: .
+      context: ./frontend
       dockerfile: docker/Dockerfile.pw
     environment:
       BASE_URL: http://webapp:3000
@@ -72,14 +72,14 @@ services:
   # Screenshots of each stage are written to ./e2e/screenshots on the host.
   demo-stories:
     build:
-      context: .
+      context: ./frontend
       dockerfile: docker/Dockerfile.pw
     command: ["node", "e2e/demo-stories.mjs"]
     environment:
       BASE_URL: http://webapp:3000
       SHOT_DIR: /tests/screenshots
     volumes:
-      - ./e2e/screenshots:/tests/screenshots
+      - ./frontend/e2e/screenshots:/tests/screenshots
     depends_on:
       webapp:
         condition: service_healthy
@@ -89,14 +89,14 @@ services:
   #   docker compose up --build --exit-code-from shift-story shift-story
   shift-story:
     build:
-      context: .
+      context: ./frontend
       dockerfile: docker/Dockerfile.pw
     command: ["node", "e2e/shift-qr-story.mjs"]
     environment:
       BASE_URL: http://webapp:3000
       SHOT_DIR: /tests/screenshots
     volumes:
-      - ./e2e/screenshots:/tests/screenshots
+      - ./frontend/e2e/screenshots:/tests/screenshots
     depends_on:
       webapp:
         condition: service_healthy
@@ -106,14 +106,14 @@ services:
   #   docker compose up --build --exit-code-from maya-story maya-story
   maya-story:
     build:
-      context: .
+      context: ./frontend
       dockerfile: docker/Dockerfile.pw
     command: ["node", "e2e/maya-confirmation-story.mjs"]
     environment:
       BASE_URL: http://webapp:3000
       SHOT_DIR: /tests/screenshots
     volumes:
-      - ./e2e/screenshots:/tests/screenshots
+      - ./frontend/e2e/screenshots:/tests/screenshots
     depends_on:
       webapp:
         condition: service_healthy
